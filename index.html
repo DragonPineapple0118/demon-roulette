@@ -1,0 +1,142 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>實彈輪盤</title>
+<style>
+:root{--bg:#1d2833;--ink:#e9e5d8;--dim:#93a4b4;--live:#d4a63c;--blank:#9fb6cc;--card:#27364a;--line:#3b4d63}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 "Noto Sans TC",system-ui,sans-serif}
+main{max-width:480px;margin:0 auto;padding:16px 16px 32px}h1{font-size:30px;margin:24px 0 8px}p{margin:8px 0;color:var(--dim)}
+button{font:inherit;color:var(--ink);background:var(--card);border:2px solid var(--line);border-radius:10px;padding:14px;width:100%;margin:6px 0;cursor:pointer}
+button.main{background:var(--live);color:#1d2833;border-color:var(--live);font-weight:700}button:disabled{opacity:.4}button:focus-visible{outline:3px solid var(--blank)}
+.hud{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center}.hud div{background:var(--card);border-radius:8px;padding:8px 2px;font-size:13px;color:var(--dim)}.hud b{display:block;font-size:20px;color:var(--ink);min-height:30px}
+.sh{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 4px;min-height:30px}.sh i{width:28px;height:28px;border-radius:50%}.L{background:var(--live)}.B{border:3px solid var(--blank)}
+.bar{height:6px;background:var(--card);border-radius:3px;overflow:hidden}.bar span{display:block;height:100%;background:var(--live)}
+#msg{min-height:60px;padding:10px 0;color:var(--ink)}.opt button{display:inline-block;width:auto;padding:8px 14px;margin:4px 4px 4px 0}.opt .on{background:var(--live);color:#1d2833}
+table{border-collapse:collapse;width:100%;font-size:14px}td,th{border-bottom:1px solid var(--line);padding:4px;text-align:right}
+
+.stage{position:fixed;inset:0;z-index:5;overflow:hidden;background:#000;display:grid;place-items:center}
+/* 橫式（電腦）版面 16:9；直式（手機）版面 9:19。數值都是相對於 .world 的百分比 */
+.world{position:relative;overflow:hidden;width:min(100vw,177.78vh);width:min(100vw,177.78dvh);aspect-ratio:16/9;
+ --bg:url(assets/bg_pc.png);--dw:41.67%;--dt:3.7%;--oy:32.5%;--tw:57.3%;--tt:21.3%;--gx:33%;--gy:-68%;--gh:50%;--mw:20%;--mb:13%;--is:3.1cqw}
+@media(max-aspect-ratio:1/1){.world{width:min(100vw,47.37vh);width:min(100vw,47.37dvh);aspect-ratio:9/19;
+ --bg:url(assets/bg_phone.png);--dw:120.4%;--dt:16.27%;--oy:25%;--tw:112%;--tt:39.43%;--gx:18%;--gy:-80%;--gh:42%;--mw:46%;--mb:9%;--is:3.7cqw}}
+.scene{position:absolute;inset:0;perspective:700px;background:#8c8c8c var(--bg) center/100% 100% no-repeat}
+.dvs{position:absolute;left:50%;top:var(--dt);width:var(--dw);aspect-ratio:1;translate:-50% 0}.dvs img,.dvs svg{position:absolute;inset:0;width:100%;height:100%}.dv{position:absolute;inset:0;-webkit-mask-image:linear-gradient(#000 84%,transparent 96%);mask-image:linear-gradient(#000 84%,transparent 96%)}
+.dh{transform-origin:49% 51%;animation:nod 5s ease-in-out infinite}@keyframes nod{0%,100%{rotate:-1.2deg}50%{rotate:1.2deg}}
+.tb{position:absolute;left:50%;top:var(--tt);width:var(--tw);aspect-ratio:1;translate:-50% 0;z-index:1;container-type:inline-size;color:#111}
+.tb img{position:absolute;inset:0;width:100%;height:100%}
+.n{position:absolute;top:53.7%;translate:-50% -50%;transform:skewX(14deg);font-weight:800;font-size:5.6cqw;line-height:1;font-variant-numeric:tabular-nums}
+#vb{left:71.5%}#vl{left:81.3%;color:#c0392b}.hp{position:absolute;display:flex;gap:1.2cqw;translate:-50% -50%}.tb .hp img{position:static;width:auto;height:100%}.hp .lost{opacity:.2;filter:grayscale(1)}.hpd{left:50%;top:41.6%;height:3.6cqw}.hpm{left:30%;top:68.8%;height:6.2cqw}
+.inf{position:absolute;left:28%;top:53%;width:36%;display:grid;grid-template-columns:1fr 1fr;gap:0 4%;font-size:var(--is);font-weight:700;line-height:1.4;white-space:nowrap}.inf i{font-style:normal;color:#c0392b}
+.dh.eo{animation:nod 5s ease-in-out infinite,bo 4.6s steps(1) infinite}.dh.ec{opacity:0;animation:nod 5s ease-in-out infinite,bc 4.6s steps(1) infinite}@keyframes bo{0%{opacity:1}96%,100%{opacity:0}}@keyframes bc{0%{opacity:0}96%,100%{opacity:1}}
+.dv{transform-origin:50% 60%;animation:idle 3s ease-in-out infinite}
+.gw{position:absolute;left:0;right:0;bottom:6%;height:var(--gh);z-index:2;transform-origin:50% 100%;transform:translateX(var(--gx)) translateY(14%) rotate(-24deg)}.gw svg{width:100%;height:100%}
+.gsf{opacity:0}.ps .gf{opacity:0}.ps .gsf{opacity:1}
+.pf .gw{transform:translateX(var(--gx)) rotate(-24deg) scale(1.04)}.ps .gw{transform:translateY(6%) rotateX(10deg)}
+.aim-dev .gw{animation:ad 1s ease-out both}.aim-self .gw{animation:as 1s ease-out both}.aim-dev .gs,.aim-self .gs{animation:tr .12s infinite alternate}
+.mf,.mfs{opacity:0;fill:#fff}.mf,.mfs{transform-box:fill-box;transform-origin:center}
+.ov{position:fixed;inset:0;pointer-events:none;opacity:0;z-index:9}
+.top{position:absolute;top:0;left:0;right:0;padding:8px 12px;text-align:center;font-size:14px;z-index:4;text-shadow:0 1px 3px #000}.top .bar{height:5px;margin:4px 0;background:#0008;border-radius:3px;overflow:hidden}.top .bar span{display:block;height:100%;background:var(--live)}
+#msg{position:absolute;left:3%;bottom:var(--mb);max-width:var(--mw);padding:6px 10px;background:#000b;border-radius:8px;z-index:4;min-height:0;font-size:14px}#msg:empty{display:none}
+.btns{position:absolute;left:10px;right:10px;bottom:10px;display:flex;gap:10px;z-index:6}.btns button{margin:0}
+.blood{position:absolute;top:0;left:0;width:100%;height:13%;z-index:3;animation:bl .8s ease-out both}
+@keyframes bl{from{transform:translateY(-100%)}}
+@keyframes idle{50%{translate:0 -4px}}@keyframes fl{0%{opacity:1}100%{opacity:0}}@keyframes fb{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(5)}}
+@keyframes ck{50%{translate:0 6px}}@keyframes tr{to{translate:1px 1.5px}}@keyframes ln{50%{transform:scale(1.15)}}
+@keyframes ad{from{transform:translateX(var(--gx)) translateY(40%) rotate(-24deg)}to{transform:translateX(var(--gx)) rotate(-24deg) scale(1.04)}}@keyframes as{from{transform:translateY(70%)}to{transform:translateY(6%) rotateX(10deg)}}
+@keyframes ret{0%,2.9%{opacity:1;clip-path:none}3%,44.9%{opacity:0}45%{opacity:1;clip-path:circle(0% at 49% 36%);filter:brightness(0);transform:scale(.6);animation-timing-function:linear}72%{opacity:1;clip-path:circle(38% at 49% 36%);filter:brightness(.45);transform:scale(.86);animation-timing-function:ease-out}100%{opacity:1;clip-path:circle(85% at 49% 36%);filter:brightness(1);transform:none}}@keyframes hands{0%,18%{opacity:0;translate:0 50px;scale:.7}26%{opacity:1;translate:0 0;scale:1}85%{opacity:1}100%{opacity:0}}@keyframes shade{0%{opacity:0}10%,60%{opacity:.92}100%{opacity:0}}
+@keyframes bk{0%,2%{opacity:0}2.2%,76.7%{opacity:1}100%{opacity:0}}@keyframes gl{0%,17%{opacity:1}100%{opacity:0}}@keyframes fm{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(2.5)}}@keyframes gone{to{opacity:0}}.gone{animation:gone .2s forwards}
+@keyframes rd{0%{opacity:.6}100%{opacity:0}}@keyframes sh{20%{translate:-6px 0}40%{translate:6px 0}60%{translate:-4px 0}80%{translate:3px 0}}
+.a-hitd .dv{transform-origin:49% 36%;animation:ret 3s both}.a-hitd .scene{animation:sh .4s .05s}.a-selfl .ov{background:#000;animation:bk 2.4s both}.a-hitd .mf{animation:fm .3s both}
+.a-selfl .scene{animation:sh .4s .05s}
+.a-clkd .gs,.a-selfb .gs{animation:ck .3s}.a-clkd.r-blank .gs{animation:ck .3s,ck .3s 2s}
+.r-live .dv,.r-blank .dv{animation:ln .5s 2s}.r-live .ov{background:#000;animation:bk 2.4s 2s both}.r-live .scene{animation:sh .4s 2.05s}
+.r-live .gw,.r-blank .gw{animation:toD 3.3s both}.r-live .gf,.r-blank .gf{animation:gfk 3.3s both}.r-live .gsf,.r-blank .gsf{animation:gsk 3.3s both}
+@keyframes toD{0%,15%{transform:translateX(var(--gx)) rotate(-24deg) scale(1.04)}26%,81%{transform:translateY(var(--gy)) scale(.5)}100%{transform:translateX(var(--gx)) rotate(-24deg) scale(1.04)}}
+@keyframes gfk{0%,15%{opacity:1}16%,81%{opacity:0}82%,100%{opacity:1}}@keyframes gsk{0%,15%{opacity:0}16%,81%{opacity:1}82%,100%{opacity:0}}
+.shade{position:absolute;inset:-8%;background:radial-gradient(circle at 50% 56%,#000 0,#000 40%,transparent 68%);opacity:0}.hd{opacity:0;fill:#fff;stroke:#111;stroke-width:1.2;transform-box:fill-box;transform-origin:50% 100%}
+.gl{position:fixed;border-radius:50%;translate:-50% -50%;background:radial-gradient(circle,#fff 0,rgba(255,255,255,.85) 25%,rgba(255,255,255,0) 70%);opacity:0;z-index:10;pointer-events:none}.gl.go{animation:gl .3s both}
+@media(prefers-reduced-motion:reduce){.ov{display:none}.stage *{animation:none!important}}
+label{display:block;margin-top:16px;color:var(--dim)}input{font:inherit;color:var(--ink);background:var(--card);border:2px solid var(--line);border-radius:10px;padding:14px;width:100%;margin:6px 0}input:focus-visible{outline:3px solid var(--blank)}#ne{color:#e0584a;min-height:1.6em}
+@media(min-aspect-ratio:1/1){.btns{right:auto;width:27%;left:2%;bottom:3%}}
+</style></head><body><main id="app"></main><script>
+const C={ver:'v2',lv:[{L:2,B:3,hp:2,hc:1},{L:3,B:3,hp:2,hc:2},{L:4,B:4,hp:2,hc:3}],a:10,b:5,d:5,bonus:10,T:10,G:300,
+ /* 表情設定：eyes=眼眶編號, ball=眼珠檔名(閉眼不用寫), mouth=嘴巴編號, blush=腮紅編號(不要就不寫) */
+ faces:{idle:[{eyes:1,mouth:1,blush:1},{eyes:2,ball:'eyeballs_for_eyes2',mouth:2,blush:1},{eyes:3,ball:'eyeballs2',mouth:3}],
+  aimed:{eyes:2,ball:'eyeballs_for_eyes2',mouth:1,blush:2},grin:{eyes:2,ball:'eyeballs_for_eyes2',mouth:3}},
+
+ url:'https://script.google.com/macros/s/AKfycbwyykMmjN4Ehfu8D5uznB-Hx6UHFNCUeqD6rPt8JHZq-06QpDgfyVabshVbhW8MP2aZ/exec' /* 把 Apps Script 網頁應用程式網址貼在這裡 */};
+const COLS=['ts','gid','pid','seq','ver','src','type','level','shot_no','live_left','blank_left','hp','hc','score_before','actor','action','result','score_after','dec_time','timeout','end_reason','final_score','levels_cleared','total_time','diff','replay','fun','device','name'];
+const TH={A:{0:.1,15:.9},B:{0:.2,5:.1,15:.3,20:.1,25:.1,35:.1,45:.1}};
+const $=q=>document.querySelector(q),app=$('#app');
+const ls={get:k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let name=ls.get('bk_name')||'';const esc=x=>String(x).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
+let pid=ls.get('bk_pid');if(!pid){pid='P'+Math.random().toString(36).slice(2,8);ls.set('bk_pid',pid)}
+/* ---- 遊戲引擎（模擬模式共用）---- */
+const shuf=(n,l)=>{const a=Array.from({length:n},(_,i)=>i<l?1:0);for(let i=n-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const left=s=>{const r=s.sh.slice(s.i),l=r.reduce((x,y)=>x+y,0);return[l,r.length-l]};
+const newLevel=(n,score)=>{const c=C.lv[n-1];return{n,sh:shuf(c.L+c.B,c.L),i:0,hp:c.hp,hc:c.hc,score}};
+function shoot(s,act){const ev=[],take=()=>s.sh[s.i++];const x=take();
+ if(act==='s'){if(x)s.hp--;else s.score+=C.a;ev.push({actor:'player',tgt:'self',x,sc:s.score})}
+ else if(x){s.hc--;s.score+=C.b;ev.push({actor:'player',tgt:'computer',x,sc:s.score})}
+ else{s.score=Math.max(0,s.score-C.d);ev.push({actor:'player',tgt:'computer',x,sc:s.score});
+  if(s.i<s.sh.length){const r=take();if(r)s.hp--;ev.push({actor:'computer',tgt:'player',x:r,sc:s.score})}}
+ return ev}
+const state=s=>s.hp<=0?'dead':s.hc<=0?'clear':'';
+const fin=s=>{const r=state(s);if(r==='clear')s.score+=C.bonus;return r};
+const bot={A:()=>'c',B:s=>s.hp===2&&left(s)[1]>0?'s':'c'};
+/* ---- 紀錄：每發即時存本機並分批送出 ---- */
+let seq=0,gid='',busy=0;const all=ls.get('bk_all')||[];let out=ls.get('bk_out')||[];
+function log(type,o){const r=Object.assign({ts:new Date().toISOString(),gid,pid,name,seq:++seq,ver:C.ver,src:'human',type,device:/Mobi|Android|iPhone/.test(navigator.userAgent)?'phone':'pc'},o);all.push(r);out.push(r);ls.set('bk_all',all);ls.set('bk_out',out)}
+function flush(beacon){if(!C.url||!out.length)return;const b=JSON.stringify(out),n=out.length;
+ if(beacon&&navigator.sendBeacon){if(navigator.sendBeacon(C.url,new Blob([b],{type:'text/plain'}))){out=out.slice(n);ls.set('bk_out',out)}return}
+ if(busy)return;busy=1;fetch(C.url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:b}).then(()=>{out=out.slice(n);ls.set('bk_out',out)}).catch(()=>{}).finally(()=>{busy=0})}
+setInterval(()=>flush(),3000);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)flush(true)});addEventListener('pagehide',()=>flush(true));
+function csv(){const q=v=>{v=v==null?'':String(v);return/[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+ const t=[COLS.join(',')].concat(all.map(r=>COLS.map(c=>q(r[c])).join(','))).join('\n'),a=document.createElement('a');
+ a.href=URL.createObjectURL(new Blob(['\ufeff'+t],{type:'text/csv'}));a.download='bk_'+pid+'.csv';a.click()}
+/* ---- 畫面與流程 ---- */
+let s,t0=0,tm=null,gno=ls.get('bk_n')||0,gt=0,shot=0,cleared=0;
+function askName(){app.innerHTML=`<h1>實彈輪盤</h1><p>請輸入你的名字或暱稱，這台裝置只需要輸入一次。</p><label for=nm>名字</label><input id=nm maxlength=20 autocomplete=off><p id=ne role=alert></p><button class=main id=nok>確定</button>`;
+ const go=()=>{const v=$('#nm').value.trim();if(!v){$('#ne').textContent='請先輸入名字。';return}name=v;ls.set('bk_name',v);home()};$('#nok').onclick=go;$('#nm').onkeydown=e=>{if(e.key==='Enter')go()};$('#nm').focus()}
+function home(){if(!name)return askName();app.onclick=null;clearInterval(tm);
+ app.innerHTML=`<h1>實彈輪盤</h1><p>共三關。每關彈匣隨機排列，畫面會顯示剩餘的實彈與空彈數。</p><p>射自己：空彈 +${C.a} 分並繼續，實彈則生命 −1。</p><p>射惡魔：實彈 +${C.b} 分，惡魔生命 −1；空彈 −${C.d} 分，惡魔會朝你開一槍。</p><p>每發 ${C.T} 秒內決定，超時自動射惡魔；整局上限 ${C.G} 秒，時間到就以目前分數結算。你的生命歸零就結束，惡魔生命歸零就過關（+${C.bonus} 分）。</p><button class=main id=go>開始遊戲</button><button id=ex>匯出 CSV</button><p>已玩 ${gno} 局，待同步 ${out.length} 筆。玩家：${esc(name)}（代號 ${pid}）。</p>`;
+ $('#go').onclick=start;$('#ex').onclick=csv}
+function start(){gno++;ls.set('bk_n',gno);gid=pid+'-'+gno;seq=0;gt=Date.now();cleared=0;log('game_start',{});lvl(1,0)}
+function lvl(n,sc){s=newLevel(n,sc);shot=0;const b=left(s);log('level_start',{level:n,live_left:b[0],blank_left:b[1],hp:s.hp,hc:s.hc,score_after:sc});draw('')}
+const cls=f=>{const ps=f.aim==='self'||/^self/.test(f.a||''),pf=!ps&&(f.aim||f.a);return`${f.aim?'aim-'+f.aim:''} ${f.a?'a-'+f.a:''} ${f.r?'r-'+f.r:''} ${ps?'ps':pf?'pf':''}`};
+const BLOOD='<svg class=blood viewBox="0 0 300 60" preserveAspectRatio="none" aria-hidden="true" fill="#8e1b1b"><rect width="300" height="10"/><rect x="20" width="8" height="40" rx="4"/><rect x="62" width="8" height="24" rx="4"/><rect x="110" width="10" height="54" rx="5"/><rect x="170" width="8" height="30" rx="4"/><rect x="215" width="10" height="46" rx="5"/><rect x="262" width="8" height="26" rx="4"/></svg>';
+const im=(n,c)=>`<img class="dh ${c||''}" src="assets/${n}.png" alt="">`;
+['back_hair','body','cape','face_1','face_2','face_3','blush1','blush2','eyebrows1','eyes1','eyes2','eyes3','eyeballs1','eyeballs2','eyeballs_for_eyes2','mouth1','mouth2','mouth3','mouth4','table','bg_pc','bg_phone','heart'].forEach(n=>{new Image().src='assets/'+n+'.png'});
+function face(f){const idle=!f.aim&&!f.a,e=f.aim==='dev'?C.faces.aimed:(f.r||f.a==='selfl')?C.faces.grin:C.faces.idle[s.n-1],bl=idle&&e.ball;
+ return im('face_'+s.n)+(e.blush?im('blush'+e.blush):'')+(e.ball?im(e.ball,bl?'eo':''):'')+im('eyes'+e.eyes,bl?'eo':'')+(bl?im('eyes1','ec'):'')+im('eyebrows1')+im('mouth'+e.mouth)}
+const scene=(f,pl)=>`<div class=scene><div class=dvs aria-hidden="true"><div class=dv><img class=dh src="assets/back_hair.png" alt=""><img src="assets/body.png" alt=""><img src="assets/cape.png" alt="">${face(f)}</div></div><div class=tb><img src="assets/table.png" alt="">${pl}</div><div class=gw><svg class=gs viewBox="0 0 300 250" preserveAspectRatio="xMidYMax meet" aria-hidden="true"><g class=gf><polygon points="122,250 178,250 156,128 144,128" fill="#7d8996"/><polygon points="122,250 150,250 150,128 144,128" fill="#5e6a76"/><ellipse cx="150" cy="128" rx="6" ry="3" fill="#0c1015"/><polygon points="128,214 172,214 166,188 134,188" fill="#5b4636"/><rect x="124" y="200" width="52" height="24" rx="10" fill="#c58f6b"/><circle class=mf cx="150" cy="126" r="18"/></g><g class=gsf><polygon points="70,250 230,250 190,185 110,185" fill="#4b5560"/><ellipse cx="150" cy="160" rx="58" ry="48" fill="#8793a0"/><ellipse cx="150" cy="160" rx="44" ry="35" fill="#2a323b"/><ellipse cx="150" cy="160" rx="30" ry="23" fill="#030507"/><ellipse cx="150" cy="222" rx="26" ry="18" fill="#6b7682"/><ellipse cx="150" cy="222" rx="14" ry="9" fill="#030507"/><rect x="48" y="228" width="70" height="34" rx="14" fill="#c58f6b"/><rect x="182" y="228" width="70" height="34" rx="14" fill="#c58f6b"/><ellipse class=mfs cx="150" cy="160" rx="40" ry="32"/></g></svg></div></div>`;
+const hearts=(n,m)=>Array.from({length:m},(_,i)=>`<img src="assets/heart.png" alt=""${i<n?'':' class=lost'}>`).join('');
+function draw(msg,dis,fx){clearInterval(tm);const[l,b]=left(s),f=fx||{},w=f.show||{},hurt=f.h0>s.hp,bd=hurt?(f.r?2.15:.15):0,
+ pl=`<b class=n id=vb>${w.b??b}</b><b class=n id=vl>${w.l??l}</b><div class="hp hpd" role=img aria-label="惡魔生命 ${s.hc}">${hearts(s.hc,C.lv[s.n-1].hc)}</div><div class="hp hpm" id=vhp role=img aria-label="我的生命">${hearts(w.hp??s.hp,C.lv[s.n-1].hp)}</div><div class=inf><span>關卡 ${s.n}/3</span><span>分數 ${s.score}</span></div>`;
+ app.innerHTML=`<div class="stage ${cls(f)}"><div class=world>${scene(f,pl)}<div class=top><div class=bar><span id=bar style="width:100%"></span></div><span id=tl>${dis?'':C.T+' 秒'}</span></div>${s.hp===1?BLOOD.replace('<svg ','<svg style="'+(hurt?'animation-delay:'+bd+'s':'animation:none')+'" '):''}<div id=msg>${msg}</div>${dis?'':'<div class=btns><button class=main id=bs>射自己</button><button id=bc>射惡魔</button></div>'}</div><div class=ov></div><div class=gl></div></div>`;
+ if(dis)return;$('#bs').onclick=()=>act('s');$('#bc').onclick=()=>act('c');t0=Date.now();
+ tm=setInterval(()=>{if(Date.now()-gt>=C.G*1000)return tmo();const r=Math.max(0,C.T-(Date.now()-t0)/1000);$('#tl').textContent=Math.ceil(r)+' 秒｜全局剩 '+Math.ceil(C.G-(Date.now()-gt)/1000)+' 秒';$('#bar').style.width=r/C.T*100+'%';if(r<=0)act('c',1)},100)}
+function act(a,to){clearInterval(tm);const dt=Math.min(C.T,(Date.now()-t0)/1000);draw('瞄準中…',1,{aim:a==='s'?'self':'dev'});setTimeout(()=>fire(a,to,dt),1500)}
+function fire(a,to,dt){const b=left(s),sb=s.score,hp=s.hp,hc=s.hc,ev=shoot(s,a),m=[];
+ if(to)m.push('超時，自動射惡魔。');
+ ev.forEach((e,j)=>{log('shot',{level:s.n,shot_no:++shot,live_left:b[0],blank_left:j?b[1]-1:b[1],hp,hc,score_before:j?ev[0].sc:sb,actor:e.actor,action:j?'retaliate':to?'timeout_computer':a==='s'?'self':'computer',result:e.x?'live':'blank',score_after:e.sc,dec_time:j?'':dt.toFixed(2),timeout:to?1:0});
+  m.push(j?`惡魔反擊：${e.x?'實彈，你的生命 −1':'空彈'}。`:e.tgt==='self'?`對自己開槍：${e.x?'實彈，生命 −1':'空彈，+'+C.a+' 分'}。`:`對惡魔開槍：${e.x?'實彈，+'+C.b+' 分，惡魔生命 −1':'空彈，−'+C.d+' 分'}。`)});
+ const r=fin(s),e0=ev[0],e1=ev[1],fx={a:e0.tgt==='self'?(e0.x?'selfl':'selfb'):(e0.x?'hitd':'clkd'),r:e1?(e1.x?'live':'blank'):'',h0:hp},full=m.join('<br>');
+ /* 結果在開槍那一刻才揭曉：反擊前只顯示玩家這一發之後的狀態 */
+ if(e1)fx.show={hp,l:b[0],b:b[1]-1};else if(fx.a==='selfl')fx.show={hp};
+ draw(e1?m.slice(0,-1).concat('惡魔拿起了槍…').join('<br>'):full,1,fx);
+ if(fx.show){const st=$('.stage');setTimeout(()=>{if($('.stage')!==st)return;const[l2,b2]=left(s);$('#vhp').innerHTML=hearts(s.hp,C.lv[s.n-1].hp);$('#vl').textContent=l2;$('#vb').textContent=b2;$('#msg').innerHTML=full},e1?(e1.x?2060:2150):60)}
+ const gl=z=>{const e=$('.mfs'),g=$('.gl');if(!e||!g)return;const q=e.getBoundingClientRect();g.style.cssText=`left:${q.left+q.width/2}px;top:${q.top+q.height/2}px;width:${z}px;height:${z}px`;g.classList.add('go')};if(fx.a==='selfl')gl(260);if(fx.r==='live')setTimeout(()=>gl(170),2000);setTimeout(()=>r?end(r):draw(''),fx.a==='hitd'?3100:fx.r==='live'?4500:fx.r?3500:fx.a==='selfl'?2500:1300)}
+function end(r){log('level_end',{level:s.n,end_reason:r,score_after:s.score,hp:s.hp,hc:s.hc});
+ if(r==='dead')return over('dead');cleared++;if(s.n===3)return over('clear');
+ app.innerHTML=`<h1>第 ${s.n} 關通關</h1><p>通關 +${C.bonus} 分，目前 ${s.score} 分。下一關生命會重設。</p><button class=main id=nx>進入第 ${s.n+1} 關</button>`;$('#nx').onclick=()=>lvl(s.n+1,s.score)}
+function tmo(){clearInterval(tm);log('level_end',{level:s.n,end_reason:'timeout',score_after:s.score,hp:s.hp,hc:s.hc});over('timeout')}
+function over(r){const ti=r==='clear'?'全部通關':r==='timeout'?'時間到':'遊戲結束';
+ log('game_end',{end_reason:r==='clear'?'clear_all':r==='timeout'?'timeout':'dead_L'+s.n,final_score:s.score,levels_cleared:cleared,total_time:Math.round((Date.now()-gt)/1000)});flush();
+ app.innerHTML=`<h1>${ti}</h1><p>最終分數 ${s.score}，通過 ${cleared} 關。</p><button class=main id=ok>回到首頁</button>`;$('#ok').onclick=home}
+/* ---- 模擬模式：網址加 ?sim=A 或 ?sim=B（可加 &n=20000）---- */
+function simPage(k){const n=+(/n=(\d+)/.exec(location.search)||[0,20000])[1],o={c:[0,0,0],tot:0,all:0,p1:{}};
+ for(let g=0;g<n;g++){let sc=0,lv=0;for(let m=1;m<=3;m++){const x=newLevel(m,sc);while(!state(x))shoot(x,bot[k](x));const r=fin(x);sc=x.score;if(m===1)o.p1[sc]=(o.p1[sc]||0)+1;if(r!=='clear')break;o.c[m-1]++;lv++}o.tot+=sc;if(lv===3)o.all++}
+ const th=TH[k],xs=[...new Set(Object.keys(o.p1).concat(Object.keys(th)))].sort((a,b)=>a-b);
+ app.innerHTML=`<h1>模擬：策略 ${k}</h1><p>${n} 局，資料來源為模擬，不會上傳。</p><p>第一關通關率 ${(o.c[0]/n).toFixed(3)}，連過兩關 ${(o.c[1]/n).toFixed(3)}，整局通關 ${(o.all/n).toFixed(3)}，平均總分 ${(o.tot/n).toFixed(2)}</p><table><tr><th>第一關得分</th><th>模擬</th><th>理論</th></tr>${xs.map(x=>`<tr><td>${x}</td><td>${((o.p1[x]||0)/n).toFixed(3)}</td><td>${(th[x]||0).toFixed(3)}</td></tr>`).join('')}</table>`}
+const sm=/sim=([AB])/.exec(location.search);sm?simPage(sm[1]):home();
+</script></body></html>
