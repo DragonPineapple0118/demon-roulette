@@ -53,14 +53,11 @@ table{border-collapse:collapse;width:100%;font-size:14px}td,th{border-bottom:1px
 @keyframes rd{0%{opacity:.6}100%{opacity:0}}@keyframes sh{20%{translate:-6px 0}40%{translate:6px 0}60%{translate:-4px 0}80%{translate:3px 0}}
 .a-hitd .dv{transform-origin:49% 36%;animation:ret 3s both}.a-hitd .scene{animation:sh .4s .05s}.a-selfl .ov{background:#000;animation:bk 2.4s both}
 .a-selfl .scene{animation:sh .4s .05s}
-.a-clkd .w2 img,.a-selfb .w3 img{animation:ck .3s}.r-blank .w3 img{animation:ck .3s 2s}.a-hitd .w2 img{animation:rc .25s}.a-selfl .w3 img{animation:rcs .25s}.r-live .w3 img{animation:rcs .25s 2s}
-.r-live .dv,.r-blank .dv{animation:ln .5s 2s}.ov.on{background:#000;animation:bk 2.4s both}.r-live .scene{animation:sh .4s 2.05s}
-.r-live .gw,.r-blank .gw{animation:toD 3.3s both}.r-live .w2,.r-blank .w2{animation:gfk 3.3s both}.r-live .w3,.r-blank .w3{animation:gsk 3.3s both}
-@keyframes toD{0%,15%{transform:none}26%,81%{transform:translateY(var(--gy)) scale(.5)}100%{transform:none}}
-@keyframes gfk{0%,15%{opacity:1}16%,81%{opacity:0}82%,100%{opacity:1}}@keyframes gsk{0%,15%{opacity:0}16%,81%{opacity:1}82%,100%{opacity:0}}
+.a-clkd .w2 img,.a-selfb .w3 img{animation:ck .3s}.a-hitd .w2 img{animation:rc .25s}.a-selfl .w3 img{animation:rcs .25s}.hh{opacity:0}.r-live .h1,.r-blank .h1{animation:hh1 2.4s both}.r-live .h2,.r-blank .h2{animation:hh2 .01s 2.4s forwards}.r-blank .h2{animation:hh2 .01s 2.4s forwards,ck .3s 3.4s}@keyframes hh1{0%,16.6%{opacity:0}16.7%,99.9%{opacity:1}100%{opacity:0}}@keyframes hh2{to{opacity:1}}.r-live .w2,.r-blank .w2{animation:hidew .01s .35s forwards}@keyframes hidew{to{opacity:0}}
+.r-live .dv,.r-blank .dv{animation:ln .5s 2.4s}.ov.on{background:#000;animation:bk 2.4s both}.r-live .scene{animation:sh .4s 3.45s}
 .dk{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none}.a-hitd .dk{animation:dk 2.6s both}.a-hitd .tb,.a-hitd .gw{animation:glo .1s both}@keyframes dk{0%,38%{opacity:.9}100%{opacity:0}}@keyframes glo{0%,95%{filter:brightness(2.4) drop-shadow(0 0 14px #ffe9b0)}100%{filter:none}}
 .shade{position:absolute;inset:-8%;background:radial-gradient(circle at 50% 56%,#000 0,#000 40%,transparent 68%);opacity:0}.hd{opacity:0;fill:#fff;stroke:#111;stroke-width:1.2;transform-box:fill-box;transform-origin:50% 100%}
-.gl{position:fixed;border-radius:50%;translate:-50% -50%;background:radial-gradient(circle,#fff 0,rgba(255,255,255,.85) 25%,rgba(255,255,255,0) 70%);opacity:0;z-index:10;pointer-events:none}.gl.go{animation:gl .05s linear both}.gl.gd{animation:gld .3s both}
+.gl{position:fixed;translate:-50% -50%;opacity:0;z-index:10;pointer-events:none}.gl svg{display:block;width:100%;height:100%;overflow:visible}.gl.go{animation:gl .05s linear both}.gl.gd{animation:gld .3s both}
 @media(prefers-reduced-motion:reduce){.ov{display:none}.stage *{animation:none!important}}
 label{display:block;margin-top:16px;color:var(--dim)}input{font:inherit;color:var(--ink);background:var(--card);border:2px solid var(--line);border-radius:10px;padding:14px;width:100%;margin:6px 0}input:focus-visible{outline:3px solid var(--blank)}#ne{color:#e0584a;min-height:1.6em}
 @media(min-aspect-ratio:1/1){.btns{right:auto;width:27%;left:2%;bottom:3%}}
@@ -69,8 +66,8 @@ h2{font-size:18px;margin:20px 0 4px}.md{border:2px solid var(--line);border-radi
 </style></head><body><main id="app"></main><script>
 const C={ver:'v3',lv:[{L:2,B:3,hp:2,hc:1},{L:3,B:3,hp:2,hc:2},{L:4,B:4,hp:2,hc:3}],a:10,b:5,d:5,bonus:10,T:10,G:300,
  /* 表情設定：eyes=眼眶編號, ball=眼珠檔名(閉眼不用寫), mouth=嘴巴編號, blush=腮紅編號(不要就不寫) */
- faces:{idle:[{eyes:1,mouth:1,blush:1},{eyes:2,ball:'eyeballs_for_eyes2',mouth:2,blush:1},{eyes:3,ball:'eyeballs2',mouth:3,blush:2}],
-  aimed:{eyes:2,ball:'eyeballs_for_eyes2',mouth:1,blush:1},grin:{eyes:2,ball:'eyeballs_for_eyes2',mouth:3,blush:2}},
+ faces:{idle:[{eyes:1,mouth:1,blush:1},{eyes:2,ball:'eyeballs_for_eyes2',mouth:2,blush:1},{eyes:3,ball:'eyeballs2',mouth:3}],
+  aimed:{eyes:2,ball:'eyeballs_for_eyes2',mouth:1,blush:2},grin:{eyes:2,ball:'eyeballs_for_eyes2',mouth:3}},
 
  url:'https://script.google.com/macros/s/AKfycbwtUO9UlfroJeq1jPKIuQlq-VQA2U7rcf96bsvwM01HH6tud0TCCeLQHzYzHHi_xkoZ/exec' /* 把 Apps Script 網頁應用程式網址貼在這裡 */};
 const COLS=['ts','gid','pid','seq','ver','src','type','level','shot_no','live_left','blank_left','hp','hc','score_before','actor','action','result','score_after','dec_time','timeout','end_reason','final_score','levels_cleared','total_time','diff','replay','fun','device','name','risk','params'];
@@ -133,12 +130,12 @@ function lvl(n,sc){hitAt=s&&s.hp===1&&C.lv[s.n-1].hp>1?Date.now()-2400:-1e9;s=ne
 const cls=f=>{const ps=f.aim==='self'||/^self/.test(f.a||''),pf=!ps&&(f.aim||f.a);return`${f.aim?'aim-'+f.aim:''} ${f.a?'a-'+f.a:''} ${f.r?'r-'+f.r:''} ${ps?'ps':pf?'pf':''}`};
 let hitAt=-1e9;
 const im=(n,c)=>`<img class="dh ${c||''}" src="assets/${n}.png" alt="">`;
-['back_hair','body','cape','face_1','face_2','face_3','blush1','blush2','eyebrows1','eyes1','eyes2','eyes3','eyeballs1','eyeballs2','eyeballs_for_eyes2','mouth1','mouth2','mouth3','mouth4','table','gun_take','gun_aim','gun_self','bg_pc','bg_phone','heart'].forEach(n=>{new Image().src='assets/'+n+'.png'});
+['back_hair','body','cape','face_1','face_2','face_3','blush1','blush2','eyebrows1','eyes1','eyes2','eyes3','eyeballs1','eyeballs2','eyeballs_for_eyes2','mouth1','mouth2','mouth3','mouth4','table','gun_take','gun_aim','gun_self','demon_take','demon_shot','bg_pc','bg_phone','heart'].forEach(n=>{new Image().src='assets/'+n+'.png'});
 function face(f){const idle=!f.aim&&!f.a,e=f.aim==='dev'?C.faces.aimed:(f.r||f.a==='selfl')?C.faces.grin:C.faces.idle[s.n-1],bl=idle&&e.ball;
  return im('face_'+s.n)+(e.blush?im('blush'+e.blush):'')+(e.ball?im(e.ball,bl?'eo':''):'')+im('eyes'+e.eyes,bl?'eo':'')+(bl?im('eyes1','ec'):'')+im('eyebrows1')+im('mouth'+e.mouth)}
-const scene=(f,pl)=>`<div class=scene><div class=dvs aria-hidden="true"><div class=dv><img class=dh src="assets/back_hair.png" alt=""><img src="assets/body.png" alt=""><img src="assets/cape.png" alt="">${face(f)}</div></div><div class=dk></div><div class=tb><img src="assets/table.png" alt="">${pl}</div><div class=gw><div class=w1><img src="assets/gun_take.png" alt=""></div><div class=w2><img src="assets/gun_aim.png" alt=""></div><div class=w3><img src="assets/gun_self.png" alt=""></div></div></div>`;
+const scene=(f,pl)=>`<div class=scene><div class=dvs aria-hidden="true"><div class=dv><img class=dh src="assets/back_hair.png" alt=""><img src="assets/body.png" alt=""><img src="assets/cape.png" alt="">${face(f)}<img class="hh h1" src="assets/demon_take.png" alt=""><img class="hh h2" src="assets/demon_shot.png" alt=""></div></div><div class=dk></div><div class=tb><img src="assets/table.png" alt="">${pl}</div><div class=gw><div class=w1><img src="assets/gun_take.png" alt=""></div><div class=w2><img src="assets/gun_aim.png" alt=""></div><div class=w3><img src="assets/gun_self.png" alt=""></div></div></div>`;
 const hearts=(n,m)=>Array.from({length:m},(_,i)=>`<img src="assets/heart.png" alt=""${i<n?'':' class=lost'}>`).join('');
-function draw(msg,dis,fx){clearInterval(tm);let blood='';const[l,b]=left(s),f=fx||{},w=f.show||{},hurt=f.h0>s.hp,bd=hurt?(f.r?2.1:.1):0,
+function draw(msg,dis,fx){clearInterval(tm);let blood='';const[l,b]=left(s),f=fx||{},w=f.show||{},hurt=f.h0>s.hp,bd=hurt?(f.r?3.5:.1):0,
  pl=`<b class=n id=vb>${w.b??b}</b><b class=n id=vl>${w.l??l}</b><div class="hp hpd" role=img aria-label="惡魔生命 ${s.hc}">${hearts(s.hc,C.lv[s.n-1].hc)}</div><div class="hp hpm" id=vhp role=img aria-label="我的生命">${hearts(w.hp??s.hp,C.lv[s.n-1].hp)}</div><div class=inf><span>關卡 ${s.n}/3</span><span>分數 ${s.score}</span></div>`;
  if(hurt)hitAt=Date.now()+bd*1000;
  /* 中彈：一圈半透明血跡。剩 1 滴血時一直留著；否則約 6 秒內慢慢消散（跨畫面重繪也會接續） */
@@ -156,9 +153,12 @@ function fire(a,to,dt){const b=left(s),sb=s.score,hp=s.hp,hc=s.hc,ev=shoot(s,a),
  /* 結果在開槍那一刻才揭曉：反擊前只顯示玩家這一發之後的狀態 */
  if(e1)fx.show={hp,l:b[0],b:b[1]-1};else if(fx.a==='selfl')fx.show={hp};
  draw(e1?m.slice(0,-1).concat('惡魔拿起了槍…').join('<br>'):full,1,fx);
- if(fx.show){const st=$('.stage');setTimeout(()=>{if($('.stage')!==st)return;const[l2,b2]=left(s);$('#vhp').innerHTML=hearts(s.hp,C.lv[s.n-1].hp);$('#vl').textContent=l2;$('#vb').textContent=b2;$('#msg').innerHTML=full},e1?(e1.x?2060:2150):60)}
- const gl=(q0,x,y,z,c)=>{const e=$(q0),g=$('.gl');if(!e||!g)return;const q=e.getBoundingClientRect(),d=q.height*z;g.style.cssText=`left:${q.left+q.width*x}px;top:${q.top+q.height*y}px;width:${d}px;height:${d}px`;g.classList.add(c)};
- if(fx.a==='selfl')gl('.w3 img',.53,.93,.55,'go');if(fx.a==='hitd')gl('.w2 img',.19,.46,.2,'gd');if(fx.r==='live')setTimeout(()=>{const o=$('.ov');if(o)o.classList.add('on');gl('.w3 img',.53,.93,.6,'go')},2000);setTimeout(()=>r?end(r):draw(''),r==='dead'?(fx.r?3600:1500):fx.a==='hitd'?3100:fx.r==='live'?4500:fx.r?3500:fx.a==='selfl'?2500:1300)}
+ if(fx.show){const st=$('.stage');setTimeout(()=>{if($('.stage')!==st)return;const[l2,b2]=left(s);$('#vhp').innerHTML=hearts(s.hp,C.lv[s.n-1].hp);$('#vl').textContent=l2;$('#vb').textContent=b2;$('#msg').innerHTML=full},e1?(e1.x?3460:3550):60)}
+ const gl=(q0,x,y,z,c)=>{const e=$(q0),g=$('.gl'),wd=$('.world');if(!e||!g||!wd)return;const q=e.getBoundingClientRect(),W=wd.getBoundingClientRect(),d=Math.min(W.width,W.height)*z,R=Math.random,n=9+Math.floor(R()*5),P=[],Q=[];let a=R()*6.28;
+  for(let k=0;k<n*2;k++){const o=k%2===0,r=o?58+R()*42:20+R()*22;a+=6.2832/(n*2)*(.55+R()*.9);P.push((Math.cos(a)*r).toFixed(1)+','+(Math.sin(a)*r).toFixed(1));Q.push((Math.cos(a)*r*.5).toFixed(1)+','+(Math.sin(a)*r*.5).toFixed(1))}
+  g.innerHTML=`<svg viewBox="-100 -100 200 200"><defs><radialGradient id=fg><stop offset=0 stop-color=#fff /><stop offset=.4 stop-color=#fff3c4 /><stop offset=.75 stop-color=#ffb04a stop-opacity=.85 /><stop offset=1 stop-color=#ff7a1a stop-opacity=0 /></radialGradient><filter id=fb x=-20% y=-20% width=140% height=140%><feGaussianBlur stdDeviation=2.2 /></filter></defs><polygon points="${P.join(' ')}" fill=url(#fg) filter=url(#fb) /><polygon points="${Q.join(' ')}" fill=#fff opacity=.92 filter=url(#fb) /></svg>`;
+  g.style.cssText=`left:${q.left+q.width*x}px;top:${q.top+q.height*y}px;width:${d}px;height:${d}px;rotate:${Math.floor(R()*360)}deg`;g.classList.add(c)};
+ if(fx.a==='selfl')gl('.w3 img',.53,.93,1,'go');if(fx.a==='hitd')gl('.w2 img',.19,.46,.3,'gd');if(fx.r==='live')setTimeout(()=>{const o=$('.ov');if(o)o.classList.add('on');gl('.dvs .h2',.415,.58,1,'go')},3400);setTimeout(()=>r?end(r):draw(''),r==='dead'?(fx.r?5000:1500):fx.a==='hitd'?3100:fx.r==='live'?5900:fx.r?4900:fx.a==='selfl'?2500:1300)}
 function end(r){log('level_end',{level:s.n,end_reason:r,score_after:s.score,hp:s.hp,hc:s.hc});
  if(r==='dead')return over('dead');cleared++;if(s.n===3)return over('clear');
  app.innerHTML=`<div class=fin><div><h1>第 ${s.n} 關通關</h1><p>通關 +${C.bonus} 分，目前 ${s.score} 分。下一關生命會重設。</p><button class=main id=nx>進入第 ${s.n+1} 關</button></div></div>`;$('#nx').onclick=()=>lvl(s.n+1,s.score)}
