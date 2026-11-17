@@ -162,13 +162,14 @@ function draw(msg,dis,fx){clearInterval(tm);let blood='';const[l,b]=left(s),f=fx
  if(dis)return;$('#bs').onclick=()=>act('s');$('#bc').onclick=()=>act('c');t0=Date.now();
  tm=setInterval(()=>{if(Date.now()-gt>=C.G*1000)return tmo();const r=Math.max(0,C.T-(Date.now()-t0)/1000);$('#tl').textContent=Math.ceil(r)+' 秒｜全局剩 '+Math.ceil(C.G-(Date.now()-gt)/1000)+' 秒';$('#bar').style.width=r/C.T*100+'%';if(r<=0)act('c',1)},100)}
 /* ---- 音效：第一次點擊後才能播放（手機瀏覽器的限制） ---- */
+const VOL=.8;/* 音效音量 0～1 */
 const SN=['shut_player','shut_demon','loaded','dry_fire'],SFX={},AEL={};let AC=null;
 SN.forEach(n=>{try{const a=new Audio('assets/'+n+'.mp3');a.preload='auto';AEL[n]=a}catch(e){}});
 function unlock(){try{if(!AC){AC=new(window.AudioContext||window.webkitAudioContext)();SN.forEach(n=>fetch('assets/'+n+'.mp3').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()}).then(b=>new Promise((ok,no)=>AC.decodeAudioData(b,ok,no))).then(d=>{SFX[n]=d}).catch(()=>{}))}
  if(AC.state!=='running')AC.resume();const b=AC.createBufferSource();b.buffer=AC.createBuffer(1,1,22050);b.connect(AC.destination);b.start()}catch(e){}}
 /* 先用 Web Audio（延遲低）；還沒載好或不支援時改用 <audio> */
-function sfx(n){try{if(AC&&SFX[n]&&AC.state==='running'){const b=AC.createBufferSource();b.buffer=SFX[n];b.connect(AC.destination);b.start();return}
- const a=AEL[n];if(a){const c=a.cloneNode();c.play().catch(()=>{})}}catch(e){}}
+function sfx(n){try{if(AC&&SFX[n]&&AC.state==='running'){const b=AC.createBufferSource();b.buffer=SFX[n];const g=AC.createGain();g.gain.value=VOL;b.connect(g);g.connect(AC.destination);b.start();return}
+ const a=AEL[n];if(a){const c=a.cloneNode();c.volume=VOL;c.play().catch(()=>{})}}catch(e){}}
 ['pointerdown','touchend','click','keydown'].forEach(t=>document.addEventListener(t,unlock,true));
 function act(a,to){clearInterval(tm);sfx('loaded');const dt=Math.min(C.T,(Date.now()-t0)/1000);draw('瞄準中…',1,{aim:a==='s'?'self':'dev'});setTimeout(()=>fire(a,to,dt),1500)}
 function fire(a,to,dt){const pre=a==='c'?face({aim:'dev'}):'',b=left(s),sb=s.score,hp=s.hp,hc=s.hc,ev=shoot(s,a),m=[];
