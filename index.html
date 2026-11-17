@@ -61,14 +61,29 @@ table{border-collapse:collapse;width:100%;font-size:14px}td,th{border-bottom:1px
 @media(prefers-reduced-motion:reduce){.ov{display:none}.stage *{animation:none!important}}
 label{display:block;margin-top:16px;color:var(--dim)}input{font:inherit;color:var(--ink);background:var(--card);border:2px solid var(--line);border-radius:10px;padding:14px;width:100%;margin:6px 0}input:focus-visible{outline:3px solid var(--blank)}#ne{color:#e0584a;min-height:1.6em}
 @media(min-aspect-ratio:1/1){.btns{right:auto;width:27%;left:2%;bottom:3%}}
+.fin{position:fixed;inset:0;z-index:5;background:#000;display:grid;place-items:center;text-align:center;padding:24px}.fin>div{width:min(100%,420px);animation:fin 1s both}.fin.slow>div{animation:fin 2.5s .5s both}.fin h1{margin:0 0 12px}@keyframes fin{from{opacity:0}}
+h2{font-size:18px;margin:20px 0 4px}.md{border:2px solid var(--line);border-radius:12px;padding:12px 14px;margin:10px 0}.md p{margin:4px 0 8px}
 </style></head><body><main id="app"></main><script>
-const C={ver:'v2',lv:[{L:2,B:3,hp:2,hc:1},{L:3,B:3,hp:2,hc:2},{L:4,B:4,hp:2,hc:3}],a:10,b:5,d:5,bonus:10,T:10,G:300,
+const C={ver:'v3',lv:[{L:2,B:3,hp:2,hc:1},{L:3,B:3,hp:2,hc:2},{L:4,B:4,hp:2,hc:3}],a:10,b:5,d:5,bonus:10,T:10,G:300,
  /* 表情設定：eyes=眼眶編號, ball=眼珠檔名(閉眼不用寫), mouth=嘴巴編號, blush=腮紅編號(不要就不寫) */
- faces:{idle:[{eyes:1,mouth:1,blush:1},{eyes:2,ball:'eyeballs_for_eyes2',mouth:2,blush:1},{eyes:3,ball:'eyeballs2',mouth:3}],
-  aimed:{eyes:2,ball:'eyeballs_for_eyes2',mouth:1,blush:2},grin:{eyes:2,ball:'eyeballs_for_eyes2',mouth:3}},
+ faces:{idle:[{eyes:1,mouth:1,blush:1},{eyes:2,ball:'eyeballs_for_eyes2',mouth:2,blush:1},{eyes:3,ball:'eyeballs2',mouth:3,blush:2}],
+  aimed:{eyes:2,ball:'eyeballs_for_eyes2',mouth:1,blush:1},grin:{eyes:2,ball:'eyeballs_for_eyes2',mouth:3,blush:2}},
 
- url:'https://script.google.com/macros/s/AKfycbwtUO9UlfroJeq1jPKIuQlq-VQA2U7rcf96bsvwM01HH6tud0TCCeLQHzYzHHi_xkoZ/exec' /* 把 Apps Script 網頁應用程式網址貼在這裡 */};
-const COLS=['ts','gid','pid','seq','ver','src','type','level','shot_no','live_left','blank_left','hp','hc','score_before','actor','action','result','score_after','dec_time','timeout','end_reason','final_score','levels_cleared','total_time','diff','replay','fun','device','name'];
+ url:'https://script.google.com/macros/s/AKfycbwpQF69NCR2YVLQgtMTPO8CO8LypDr1MK4neOl6ox1TtpX0gWgwRTXg-Do628IOnXKI/exec' /* 把 Apps Script 網頁應用程式網址貼在這裡 */};
+const COLS=['ts','gid','pid','seq','ver','src','type','level','shot_no','live_left','blank_left','hp','hc','score_before','actor','action','result','score_after','dec_time','timeout','end_reason','final_score','levels_cleared','total_time','diff','replay','fun','device','name','risk','params'];
+/* ---- 可調參數：每局開始時從試算表的 config 分頁讀取；讀不到或不合格就用這裡的內建預設 ---- */
+const KEYS=['L1_live','L1_blank','L1_hp','L1_hc','L2_live','L2_blank','L2_hp','L2_hc','L3_live','L3_blank','L3_hp','L3_hc','a','b','d','bonus','T'];
+const mk=v=>Object.fromEntries(KEYS.map((k,i)=>[k,v[i]]));
+const DEF={low:mk([2,3,2,1, 3,3,2,2, 4,4,2,3, 10,5,5,10,10]),high:mk([2,3,1,1, 3,3,1,2, 4,4,1,3, 20,10,10,20,10])};
+let CFG={low:DEF.low,high:DEF.high,src:{low:'default',high:'default'}},cfgP=Promise.resolve(),risk='',params='';
+function valid(p){if(!p||!KEYS.every(k=>Number.isInteger(p[k])))return false;
+ for(let i=1;i<=3;i++){const L=p['L'+i+'_live'],B=p['L'+i+'_blank'],hp=p['L'+i+'_hp'],hc=p['L'+i+'_hc'];
+  if(L<1||B<1||hp<1||hc<1||hp>5||hc>5||L+B>12||L<hp+hc-1)return false}   /* 實彈數至少要是雙方生命和 −1，關卡才一定打得完 */
+ return['a','b','d','bonus'].every(k=>p[k]>=0&&p[k]<=100)&&p.T>=3&&p.T<=30}
+function loadCfg(){if(!C.url)return Promise.resolve();
+ return fetch(C.url+'?t='+Date.now()).then(r=>r.json()).then(j=>{const o={src:{}};['low','high'].forEach(m=>{const ok=valid(j[m]);o[m]=ok?j[m]:DEF[m];o.src[m]=ok?'sheet':'default'});CFG=o}).catch(()=>{})}
+function apply(m){const p=CFG[m];C.lv=[1,2,3].map(i=>({L:p['L'+i+'_live'],B:p['L'+i+'_blank'],hp:p['L'+i+'_hp'],hc:p['L'+i+'_hc']}));
+ C.a=p.a;C.b=p.b;C.d=p.d;C.bonus=p.bonus;C.T=p.T;risk=m;params=CFG.src[m]+'|'+KEYS.map(k=>p[k]).join(',')}
 const TH={A:{0:.1,15:.9},B:{0:.2,5:.1,15:.3,20:.1,25:.1,35:.1,45:.1}};
 const $=q=>document.querySelector(q),app=$('#app');
 const ls={get:k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
@@ -89,7 +104,7 @@ const fin=s=>{const r=state(s);if(r==='clear')s.score+=C.bonus;return r};
 const bot={A:()=>'c',B:s=>s.hp===2&&left(s)[1]>0?'s':'c'};
 /* ---- 紀錄：每發即時存本機並分批送出 ---- */
 let seq=0,gid='',busy=0;const all=ls.get('bk_all')||[];let out=ls.get('bk_out')||[];
-function log(type,o){const r=Object.assign({ts:new Date().toISOString(),gid,pid,name,seq:++seq,ver:C.ver,src:'human',type,device:/Mobi|Android|iPhone/.test(navigator.userAgent)?'phone':'pc'},o);all.push(r);out.push(r);ls.set('bk_all',all);ls.set('bk_out',out)}
+function log(type,o){const r=Object.assign({ts:new Date().toISOString(),gid,pid,name,risk,params,seq:++seq,ver:C.ver,src:'human',type,device:/Mobi|Android|iPhone/.test(navigator.userAgent)?'phone':'pc'},o);all.push(r);out.push(r);ls.set('bk_all',all);ls.set('bk_out',out)}
 function flush(beacon){if(!C.url||!out.length)return;const b=JSON.stringify(out),n=out.length;
  if(beacon&&navigator.sendBeacon){if(navigator.sendBeacon(C.url,new Blob([b],{type:'text/plain'}))){out=out.slice(n);ls.set('bk_out',out)}return}
  if(busy)return;busy=1;fetch(C.url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:b}).then(()=>{out=out.slice(n);ls.set('bk_out',out)}).catch(()=>{}).finally(()=>{busy=0})}
@@ -102,11 +117,16 @@ function csv(){const q=v=>{v=v==null?'':String(v);return/[",\n]/.test(v)?'"'+v.r
 let s,t0=0,tm=null,gno=ls.get('bk_n')||0,gt=0,shot=0,cleared=0;
 function askName(){app.innerHTML=`<h1>實彈輪盤</h1><p>請輸入你的名字或暱稱，這台裝置只需要輸入一次。</p><label for=nm>名字</label><input id=nm maxlength=20 autocomplete=off><p id=ne role=alert></p><button class=main id=nok>確定</button>`;
  const go=()=>{const v=$('#nm').value.trim();if(!v){$('#ne').textContent='請先輸入名字。';return}name=v;ls.set('bk_name',v);home()};$('#nok').onclick=go;$('#nm').onkeydown=e=>{if(e.key==='Enter')go()};$('#nm').focus()}
-function home(){if(!name)return askName();app.onclick=null;clearInterval(tm);
- app.innerHTML=`<h1>實彈輪盤</h1><p>共三關。每關彈匣隨機排列，畫面會顯示剩餘的實彈與空彈數。</p><p>射自己：空彈 +${C.a} 分並繼續，實彈則生命 −1。</p><p>射惡魔：實彈 +${C.b} 分，惡魔生命 −1；空彈 −${C.d} 分，惡魔會朝你開一槍。</p><p>每發 ${C.T} 秒內決定，超時自動射惡魔；整局上限 ${C.G} 秒，時間到就以目前分數結算。你的生命歸零就結束，惡魔生命歸零就過關（+${C.bonus} 分）。</p><button class=main id=go>開始遊戲</button><button id=ex>匯出 CSV</button><p>已玩 ${gno} 局，待同步 ${out.length} 筆。玩家：${esc(name)}（代號 ${pid}）。</p>`;
- $('#go').onclick=start;$('#ex').onclick=csv}
-function start(){gno++;ls.set('bk_n',gno);gid=pid+'-'+gno;seq=0;gt=Date.now();cleared=0;s=null;log('game_start',{});lvl(1,0)}
-function lvl(n,sc){hitAt=s&&s.hp===1?Date.now()-2400:-1e9;s=newLevel(n,sc);shot=0;const b=left(s);log('level_start',{level:n,live_left:b[0],blank_left:b[1],hp:s.hp,hc:s.hc,score_after:sc});draw('')}
+function home(){if(!name)return askName();app.onclick=null;clearInterval(tm);showHome();cfgP=loadCfg().then(()=>{if($('#golow'))showHome()})}
+function showHome(){const d=m=>{const p=CFG[m];return`我的生命 ${p.L1_hp}／${p.L2_hp}／${p.L3_hp}（三關）。射自己空彈 +${p.a}；射惡魔實彈 +${p.b}、空彈 −${p.d}；過關 +${p.bonus}。每發 ${p.T} 秒。`};
+ app.innerHTML=`<h1>實彈輪盤</h1><p>共三關。每關彈匣隨機排列，畫面會顯示剩餘的實彈與空彈數。</p><p>射自己：空彈得分並繼續，實彈則生命 −1。射惡魔：實彈得分且惡魔生命 −1；空彈扣分，惡魔會朝你開一槍。</p><p>超時自動射惡魔；整局上限 ${C.G} 秒。你的生命歸零就結束，惡魔生命歸零就過關。</p>
+ <h2>你想玩哪一種？</h2><div class=md><b>低風險</b><p>${d('low')}</p><button class=main id=golow>用低風險開始</button></div><div class=md><b>高風險</b><p>${d('high')}</p><button class=main id=gohigh>用高風險開始</button></div>
+ <button id=ex>匯出 CSV</button><p>已玩 ${gno} 局，待同步 ${out.length} 筆。玩家：${esc(name)}（代號 ${pid}）。</p><p id=hs></p>`;
+ $('#golow').onclick=()=>start('low');$('#gohigh').onclick=()=>start('high');$('#ex').onclick=csv}
+async function start(m){$('#golow').disabled=$('#gohigh').disabled=true;$('#hs').textContent='載入設定中…';
+ await Promise.race([cfgP,new Promise(r=>setTimeout(r,3000))]);apply(m);
+ gno++;ls.set('bk_n',gno);gid=pid+'-'+gno;seq=0;gt=Date.now();cleared=0;s=null;log('game_start',{});lvl(1,0)}
+function lvl(n,sc){hitAt=s&&s.hp===1&&C.lv[s.n-1].hp>1?Date.now()-2400:-1e9;s=newLevel(n,sc);shot=0;const b=left(s);log('level_start',{level:n,live_left:b[0],blank_left:b[1],hp:s.hp,hc:s.hc,score_after:sc});draw('')}
 const cls=f=>{const ps=f.aim==='self'||/^self/.test(f.a||''),pf=!ps&&(f.aim||f.a);return`${f.aim?'aim-'+f.aim:''} ${f.a?'a-'+f.a:''} ${f.r?'r-'+f.r:''} ${ps?'ps':pf?'pf':''}`};
 let hitAt=-1e9;
 const im=(n,c)=>`<img class="dh ${c||''}" src="assets/${n}.png" alt="">`;
@@ -119,7 +139,7 @@ function draw(msg,dis,fx){clearInterval(tm);let blood='';const[l,b]=left(s),f=fx
  pl=`<b class=n id=vb>${w.b??b}</b><b class=n id=vl>${w.l??l}</b><div class="hp hpd" role=img aria-label="惡魔生命 ${s.hc}">${hearts(s.hc,C.lv[s.n-1].hc)}</div><div class="hp hpm" id=vhp role=img aria-label="我的生命">${hearts(w.hp??s.hp,C.lv[s.n-1].hp)}</div><div class=inf><span>關卡 ${s.n}/3</span><span>分數 ${s.score}</span></div>`;
  if(hurt)hitAt=Date.now()+bd*1000;
  /* 中彈：一圈半透明血跡。剩 1 滴血時一直留著；否則約 6 秒內慢慢消散（跨畫面重繪也會接續） */
- if(s.hp===1)blood=`<div class="blood stay" style="animation-delay:${hurt?bd:-1}s,${hurt?bd:0}s"></div>`;
+ if(s.hp===1&&C.lv[s.n-1].hp>1)blood=`<div class="blood stay" style="animation-delay:${hurt?bd:-1}s,${hurt?bd:0}s"></div>`;
  else if(s.hp>1&&Date.now()-hitAt<6000)blood=`<div class="blood fade" style="animation-delay:${(hitAt-Date.now())/1000}s"></div>`;
  app.innerHTML=`<div class="stage ${cls(f)}"><div class=world>${scene(f,pl)}<div class=top><div class=bar><span id=bar style="width:100%"></span></div><span id=tl>${dis?'':C.T+' 秒'}</span></div>${blood}<div id=msg>${msg}</div>${dis?'':'<div class=btns><button class=main id=bs>射自己</button><button id=bc>射惡魔</button></div>'}</div><div class=ov></div><div class=gl></div></div>`;
  if(dis)return;$('#bs').onclick=()=>act('s');$('#bc').onclick=()=>act('c');t0=Date.now();
@@ -134,14 +154,14 @@ function fire(a,to,dt){const b=left(s),sb=s.score,hp=s.hp,hc=s.hc,ev=shoot(s,a),
  if(e1)fx.show={hp,l:b[0],b:b[1]-1};else if(fx.a==='selfl')fx.show={hp};
  draw(e1?m.slice(0,-1).concat('惡魔拿起了槍…').join('<br>'):full,1,fx);
  if(fx.show){const st=$('.stage');setTimeout(()=>{if($('.stage')!==st)return;const[l2,b2]=left(s);$('#vhp').innerHTML=hearts(s.hp,C.lv[s.n-1].hp);$('#vl').textContent=l2;$('#vb').textContent=b2;$('#msg').innerHTML=full},e1?(e1.x?2060:2150):60)}
- const gl=z=>{const e=$('.mfs'),g=$('.gl');if(!e||!g)return;const q=e.getBoundingClientRect();g.style.cssText=`left:${q.left+q.width/2}px;top:${q.top+q.height/2}px;width:${z}px;height:${z}px`;g.classList.add('go')};if(fx.a==='selfl')gl(260);if(fx.r==='live')setTimeout(()=>gl(170),2000);setTimeout(()=>r?end(r):draw(''),fx.a==='hitd'?3100:fx.r==='live'?4500:fx.r?3500:fx.a==='selfl'?2500:1300)}
+ const gl=z=>{const e=$('.mfs'),g=$('.gl');if(!e||!g)return;const q=e.getBoundingClientRect();g.style.cssText=`left:${q.left+q.width/2}px;top:${q.top+q.height/2}px;width:${z}px;height:${z}px`;g.classList.add('go')};if(fx.a==='selfl')gl(260);if(fx.r==='live')setTimeout(()=>gl(170),2000);setTimeout(()=>r?end(r):draw(''),r==='dead'?(fx.r?3600:1500):fx.a==='hitd'?3100:fx.r==='live'?4500:fx.r?3500:fx.a==='selfl'?2500:1300)}
 function end(r){log('level_end',{level:s.n,end_reason:r,score_after:s.score,hp:s.hp,hc:s.hc});
  if(r==='dead')return over('dead');cleared++;if(s.n===3)return over('clear');
- app.innerHTML=`<h1>第 ${s.n} 關通關</h1><p>通關 +${C.bonus} 分，目前 ${s.score} 分。下一關生命會重設。</p><button class=main id=nx>進入第 ${s.n+1} 關</button>`;$('#nx').onclick=()=>lvl(s.n+1,s.score)}
+ app.innerHTML=`<div class=fin><div><h1>第 ${s.n} 關通關</h1><p>通關 +${C.bonus} 分，目前 ${s.score} 分。下一關生命會重設。</p><button class=main id=nx>進入第 ${s.n+1} 關</button></div></div>`;$('#nx').onclick=()=>lvl(s.n+1,s.score)}
 function tmo(){clearInterval(tm);log('level_end',{level:s.n,end_reason:'timeout',score_after:s.score,hp:s.hp,hc:s.hc});over('timeout')}
 function over(r){const ti=r==='clear'?'全部通關':r==='timeout'?'時間到':'遊戲結束';
  log('game_end',{end_reason:r==='clear'?'clear_all':r==='timeout'?'timeout':'dead_L'+s.n,final_score:s.score,levels_cleared:cleared,total_time:Math.round((Date.now()-gt)/1000)});flush();
- app.innerHTML=`<h1>${ti}</h1><p>最終分數 ${s.score}，通過 ${cleared} 關。</p><button class=main id=ok>回到首頁</button>`;$('#ok').onclick=home}
+ app.innerHTML=`<div class="fin ${r==='dead'?'slow':''}"><div><h1>${ti}</h1><p>最終分數 ${s.score}，通過 ${cleared} 關。</p><button class=main id=ok>回到首頁</button></div></div>`;$('#ok').onclick=home}
 /* ---- 模擬模式：網址加 ?sim=A 或 ?sim=B（可加 &n=20000）---- */
 function simPage(k){const n=+(/n=(\d+)/.exec(location.search)||[0,20000])[1],o={c:[0,0,0],tot:0,all:0,p1:{}};
  for(let g=0;g<n;g++){let sc=0,lv=0;for(let m=1;m<=3;m++){const x=newLevel(m,sc);while(!state(x))shoot(x,bot[k](x));const r=fin(x);sc=x.score;if(m===1)o.p1[sc]=(o.p1[sc]||0)+1;if(r!=='clear')break;o.c[m-1]++;lv++}o.tot+=sc;if(lv===3)o.all++}
