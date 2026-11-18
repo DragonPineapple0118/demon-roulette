@@ -1,5 +1,5 @@
 // 資料欄位（events 分頁）
-const COLS=['ts','gid','pid','seq','ver','src','type','level','shot_no','live_left','blank_left','hp','hc','score_before','actor','action','result','score_after','dec_time','timeout','end_reason','final_score','levels_cleared','total_time','diff','replay','fun','device','name','risk','params','item_mode','peeked','item_left'];
+const COLS=['ts','gid','name','pid','seq','ver','src','type','level','shot_no','live_left','blank_left','hp','hc','score_before','actor','action','result','score_after','dec_time','timeout','end_reason','final_score','levels_cleared','total_time','diff','replay','fun','device','risk','params','item_mode','peeked','item_left'];
 
 // 後台預設值（config 分頁第一次建立時寫入；之後直接改試算表的 low / high 兩欄即可）
 const CONFIG_DEFAULT=[
@@ -48,8 +48,17 @@ function doPost(e){
   try{
     const rows=JSON.parse(e.postData.contents);
     const ss=book_();
-    const sh=ss.getSheetByName('events')||ss.insertSheet('events');
-    sh.getRange(1,1,1,COLS.length+1).setValues([['key'].concat(COLS)]);
+    const head=['key'].concat(COLS);
+    let sh=ss.getSheetByName('events');
+    if(sh&&sh.getLastRow()>0){
+      // 欄位順序改過（不只是在最後加欄）：舊資料整張改名保留，另開新的 events，避免新舊欄位錯位
+      const old=sh.getRange(1,1,1,sh.getLastColumn()).getValues()[0].filter(String);
+      const same=old.every((h,i)=>h===head[i]);
+      if(!same) sh.setName('events_舊版_'+Utilities.formatDate(new Date(),'Asia/Taipei','MMdd_HHmm'));
+      if(!same) sh=null;
+    }
+    if(!sh) sh=ss.insertSheet('events');
+    sh.getRange(1,1,1,head.length).setValues([head]);
     const n=sh.getLastRow()-1;
     const have=new Set(n>0?sh.getRange(2,1,n,1).getValues().map(r=>r[0]):[]);
     const add=[];

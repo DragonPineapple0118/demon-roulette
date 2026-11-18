@@ -82,7 +82,7 @@ const C={ver:'v4',lv:[{L:2,B:3,hp:2,hc:1},{L:3,B:3,hp:2,hc:2},{L:4,B:4,hp:2,hc:3
   take:[{mouth:1,blush:1},{mouth:2,blush:1},{mouth:4,blush:1}],point:[{mouth:1,blush:1},{mouth:2,blush:1},{mouth:5}],
   miss:[{mouth:1,blush:1},{mouth:1,blush:1},{mouth:6}],hit:{mouth:3,blush:2},nerv:{mouth:8}},
  url:'https://script.google.com/macros/s/AKfycbwpQF69NCR2YVLQgtMTPO8CO8LypDr1MK4neOl6ox1TtpX0gWgwRTXg-Do628IOnXKI/exec' /* 把 Apps Script 網頁應用程式網址貼在這裡 */};
-const COLS=['ts','gid','pid','seq','ver','src','type','level','shot_no','live_left','blank_left','hp','hc','score_before','actor','action','result','score_after','dec_time','timeout','end_reason','final_score','levels_cleared','total_time','diff','replay','fun','device','name','risk','params','item_mode','peeked','item_left'];
+const COLS=['ts','gid','name','pid','seq','ver','src','type','level','shot_no','live_left','blank_left','hp','hc','score_before','actor','action','result','score_after','dec_time','timeout','end_reason','final_score','levels_cleared','total_time','diff','replay','fun','device','risk','params','item_mode','peeked','item_left'];
 /* ---- 可調參數：每局開始時從試算表的 config 分頁讀取；讀不到或不合格就用這裡的內建預設 ---- */
 const KEYS=['L1_live','L1_blank','L1_hp','L1_hc','L2_live','L2_blank','L2_hp','L2_hc','L3_live','L3_blank','L3_hp','L3_hc','a','b','d','bonus','T'];
 const mk=v=>Object.fromEntries(KEYS.map((k,i)=>[k,v[i]]));
@@ -128,9 +128,9 @@ function csv(){const q=v=>{v=v==null?'':String(v);return/[",\n]/.test(v)?'"'+v.r
  a.href=URL.createObjectURL(new Blob(['\ufeff'+t],{type:'text/csv'}));a.download='bk_'+pid+'.csv';a.click()}
 /* ---- 畫面與流程 ---- */
 let s,t0=0,tm=null,gno=ls.get('bk_n')||0,gt=0,shot=0,cleared=0;
-function askName(){const chg=!!name;app.innerHTML=`<h1>惡魔輪盤</h1><p>${chg?'換一位玩家試玩：輸入新名字後，之後的紀錄會算成另一位玩家（新的玩家代號）。':'請輸入你的名字或暱稱，這台裝置只需要輸入一次。'}</p><label for=nm>名字</label><input id=nm maxlength=20 autocomplete=off><p id=ne role=alert></p><button class=main id=nok>確定</button>${chg?'<button id=nno>取消</button>':''}`;
+function askName(){const chg=!!name;app.innerHTML=`<h1>惡魔輪盤</h1><p>${chg?'換一位玩家試玩：按確定後會產生新的玩家代號，之後的紀錄都算成另一位玩家；就算名字一樣也分得開。只是要修改錯字就按取消，不會換人。':'請輸入你的名字或暱稱，這台裝置只需要輸入一次。'}</p><label for=nm>名字</label><input id=nm maxlength=20 autocomplete=off><p id=ne role=alert></p><button class=main id=nok>確定</button>${chg?'<button id=nno>取消</button>':''}`;
  $('#nm').value=name;const go=()=>{const v=$('#nm').value.trim();if(!v){$('#ne').textContent='請先輸入名字。';return}
-  if(chg&&v!==name){pid='P'+Math.random().toString(36).slice(2,8);ls.set('bk_pid',pid);gno=0;ls.set('bk_n',0)}
+  if(chg){pid='P'+Math.random().toString(36).slice(2,8);ls.set('bk_pid',pid);gno=0;ls.set('bk_n',0)}
   name=v;ls.set('bk_name',v);home()};$('#nok').onclick=go;if(chg)$('#nno').onclick=home;$('#nm').onkeydown=e=>{if(e.key==='Enter')go()};$('#nm').focus()}
 function home(){if(!name)return askName();app.onclick=null;clearInterval(tm);showHome();cfgP=loadCfg().then(()=>{if($('#golow'))showHome()})}
 function showHome(){const d=m=>{const p=CFG[m];return`我的生命 ${p.L1_hp}／${p.L2_hp}／${p.L3_hp}（三關）。射自己空彈 +${p.a}；射惡魔實彈 +${p.b}、空彈 −${p.d}；過關 +${p.bonus}。每發 ${p.T} 秒。${IT?'道具每關 '+p.items+' 次。':''}`};
@@ -177,6 +177,10 @@ function unlock(){try{if(!AC){AC=new(window.AudioContext||window.webkitAudioCont
 function sfx(n){try{if(AC&&SFX[n]&&AC.state==='running'){const b=AC.createBufferSource();b.buffer=SFX[n];const g=AC.createGain();g.gain.value=VOL;b.connect(g);g.connect(AC.destination);b.start();return}
  const a=AEL[n];if(a){const c=a.cloneNode();c.volume=VOL;c.play().catch(()=>{})}}catch(e){}}
 ['pointerdown','touchend','click','keydown'].forEach(t=>document.addEventListener(t,unlock,true));
+/* ---- 動態的動畫以每秒 24 格播放（時間長度不變，只是畫面像手繪動畫一格一格跳） ---- */
+const FPS=24,STEP=new Set(['nod','sway','adn','asn','rc','rcs','idle','ck','tr','ret','ent','hnd','sh','tilt','ln']);
+(function q(){const now=performance.now();try{document.getAnimations().forEach(a=>{if(!STEP.has(a.animationName))return;
+ if(!a._q){a._q=now-(a.currentTime||0);a.pause()}a.currentTime=Math.floor((now-a._q)*FPS/1000)*1000/FPS})}catch(e){}requestAnimationFrame(q)})();
 /* ---- 道具：查看下一發 ---- */
 const pkHTML=()=>`<div class="itm pk ${s.sh[s.i]?'lv':'bk'}" role=status>下一發是 <b>${s.sh[s.i]?'實彈':'空彈'}</b></div>`;
 function itemUI(){if(!IT||s.i>=s.sh.length)return'';if(s.pk===s.i)return pkHTML();return s.it>0?`<button class=itm id=bi>查看下一發（剩 ${s.it} 次）</button>`:''}
