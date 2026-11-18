@@ -266,7 +266,7 @@ const FPS=24,STEP=new Set(['nod','sway','adn','asn','rc','rcs','idle','ck','tr',
 const pkHTML=()=>`<div class="itm pk ${s.sh[s.i]?'lv':'bk'}" role=status>下一發是 <b>${s.sh[s.i]?'實彈':'空彈'}</b></div>`;
 function itemUI(){if(!IT||s.i>=s.sh.length)return'';if(s.pk===s.i)return pkHTML();return s.it>0?`<button class=itm id=bi>查看下一發（剩 ${s.it} 次）</button>`:''}
 function peek(){if(!s.it||s.pk===s.i||s.i>=s.sh.length)return;s.it--;s.pk=s.i;const b=left(s);
- log('item',{level:s.n,shot_no:shot+1,live_left:b[0],blank_left:b[1],hp:s.hp,hc:s.hc,score_before:s.score,actor:'player',action:'peek',result:s.sh[s.i]?'live':'blank',score_after:s.score,item_left:s.it});
+ log('item',{level:s.n,shot_no:shot+1,live_left:b[0],blank_left:b[1],hp:s.hp,hc:s.hc,score_before:s.score,actor:'player',action:'peek',result:s.sh[s.i]?'live':'blank',score_after:s.score,item_left:s.it,dec_time:Math.min(C.T,(Date.now()-t0)/1000).toFixed(2)});/* 道具列的 dec_time＝這一發開始到按下道具的秒數 */
  const e=$('#bi');if(e)e.outerHTML=pkHTML()}
 function act(a,to){clearInterval(tm);sfx('loaded');const dt=Math.min(C.T,(Date.now()-t0)/1000);draw('瞄準中…',1,{aim:a==='s'?'self':'dev'});setTimeout(()=>fire(a,to,dt),1500)}
 function fire(a,to,dt){const pk=s.pk===s.i?(s.sh[s.i]?'live':'blank'):'',pre=a==='c'?face({aim:'dev'}):'',b=left(s),sb=s.score,hp=s.hp,hc=s.hc,ev=shoot(s,a),m=[];
