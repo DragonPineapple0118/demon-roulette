@@ -57,6 +57,10 @@ table{border-collapse:collapse;width:100%;font-size:14px}td,th{border-bottom:1px
 .kill .dv{animation:vanish .05s forwards}.a-hitd.kill .dk{animation:dkk .3s both}.kill .hnd,.kill .pa{display:none}@keyframes vanish{0%,99%{opacity:1;filter:brightness(2.3) contrast(.75) sepia(.25)}100%{opacity:0}}.dv .dh:not(.eb){filter:brightness(.8)}.fpost{opacity:0;animation:ph3 .01s .1s forwards}.fpre{animation:gone2 .01s .1s forwards}@keyframes gone2{to{opacity:0}}@keyframes dkk{to{opacity:.9}}
 .a-ent .dv{animation:ent 4.4s both}.a-ent .dk{animation:dke 3.2s both}.a-ent .hnd{animation:hnd 4.4s both}.a-ent .pa{opacity:0;animation:pfi 4.4s both}@keyframes dke{0%,30%{opacity:.9}100%{opacity:0}}@keyframes ent{0%,44.9%{opacity:0}45%{opacity:1;clip-path:circle(0% at 49% 36%);filter:brightness(0);transform:scale(.6);animation-timing-function:linear}72%{opacity:1;clip-path:circle(38% at 49% 36%);filter:brightness(.45);transform:scale(.86);animation-timing-function:ease-out}100%{opacity:1;clip-path:circle(85% at 49% 36%);filter:brightness(1);transform:none}}
 .fin.clr{background:transparent;z-index:8}.fin.clr h1,.fin.clr p{text-shadow:0 2px 8px #000}
+.itm{position:absolute;left:50%;translate:-50% 0;bottom:calc(3% + 58px);z-index:6;margin:0;width:auto;padding:8px 16px;font-size:15px;white-space:nowrap}
+.pk{border-radius:999px;background:#000c;color:#eee;border:2px solid #888}.pk.lv{border-color:#c0392b;color:#ffb3a8}.pk.lv b{color:#ff5a46}.pk.bk b{color:#fff}
+@media(max-aspect-ratio:1/1){.itm{bottom:70px}}
+.tg{display:flex;gap:10px;align-items:center;margin:14px 0;padding:10px 14px;border:2px dashed var(--line);border-radius:12px;cursor:pointer}.tg input{width:22px;height:22px;margin:0}
 .hh{opacity:0}.r-live .h1,.r-blank .h1{animation:hh1 2.4s both}.r-live .h2,.r-blank .h2{animation:hh2 .01s 2.4s forwards}.r-blank .h2{animation:hh2 .01s 2.4s forwards,ck .3s 3.9s}@keyframes hh1{0%,16.6%{opacity:0}16.7%,99.9%{opacity:1}100%{opacity:0}}@keyframes hh2{to{opacity:1}}.r-live .w2,.r-blank .w2{animation:hidew .01s .35s forwards}@keyframes hidew{to{opacity:0}}
 .r-live .dv,.r-blank .dv{animation:none}.r-live .dh,.r-blank .dh{animation:tilt .4s 2.4s ease-out forwards}@keyframes tilt{to{rotate:-4deg}}.ov.on{background:#000;animation:bk 2.4s both}.r-live .scene{animation:sh .4s 3.95s}
 .dk{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none}.a-hitd .dk{animation:dk 2.6s both}.a-hitd .tb,.a-hitd .gw{animation:glo .1s both}@keyframes dk{0%,38%{opacity:.9}100%{opacity:0}}@keyframes glo{0%,95%{filter:brightness(2.4) drop-shadow(0 0 14px #ffe9b0)}100%{filter:none}}
@@ -69,7 +73,7 @@ label{display:block;margin-top:16px;color:var(--dim)}input{font:inherit;color:va
 h2{font-size:18px;margin:20px 0 4px}.md{border:2px solid var(--line);border-radius:12px;padding:12px 14px;margin:10px 0}.md p{margin:4px 0 8px}
 body::after{content:'';position:fixed;inset:-50%;z-index:30;pointer-events:none;opacity:.22;mix-blend-mode:overlay;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='3 0 0 0 -1 3 0 0 0 -1 3 0 0 0 -1 0 0 0 0 1'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");animation:grain 1.4s steps(4) infinite}@keyframes grain{0%{translate:0 0}25%{translate:-7% 4%}50%{translate:5% -6%}75%{translate:-3% -8%}100%{translate:8% 3%}}@media(prefers-reduced-motion:reduce){body::after{animation:none}}
 </style></head><body><main id="app"></main><script>
-const C={ver:'v3',lv:[{L:2,B:3,hp:2,hc:1},{L:3,B:3,hp:2,hc:2},{L:4,B:4,hp:2,hc:3}],a:10,b:5,d:5,bonus:10,T:10,G:300,
+const C={ver:'v4',lv:[{L:2,B:3,hp:2,hc:1},{L:3,B:3,hp:2,hc:2},{L:4,B:4,hp:2,hc:3}],a:10,b:5,d:5,bonus:10,T:10,G:300,
  /* 表情設定：eyes=眼眶編號, ball=眼珠檔名(閉眼不用寫), mouth=嘴巴編號, blush=腮紅編號(不要就不寫)；陣列依序是第 1、2、3 關
     規則：腮紅 2 只搭嘴巴 3；嘴巴 4 配腮紅 1；嘴巴 4、5、6、8 只在第 3 關用。 */
  faces:{idle:[{eyes:1,mouth:1,blush:1},{eyes:2,ball:'eyeballs_for_eyes2',mouth:2,blush:1},{eyes:3,ball:'eyeballs2',mouth:3,blush:2}],
@@ -78,24 +82,25 @@ const C={ver:'v3',lv:[{L:2,B:3,hp:2,hc:1},{L:3,B:3,hp:2,hc:2},{L:4,B:4,hp:2,hc:3
   take:[{mouth:1,blush:1},{mouth:2,blush:1},{mouth:4,blush:1}],point:[{mouth:1,blush:1},{mouth:2,blush:1},{mouth:5}],
   miss:[{mouth:1,blush:1},{mouth:1,blush:1},{mouth:6}],hit:{mouth:3,blush:2},nerv:{mouth:8}},
  url:'https://script.google.com/macros/s/AKfycbwpQF69NCR2YVLQgtMTPO8CO8LypDr1MK4neOl6ox1TtpX0gWgwRTXg-Do628IOnXKI/exec' /* 把 Apps Script 網頁應用程式網址貼在這裡 */};
-const COLS=['ts','gid','pid','seq','ver','src','type','level','shot_no','live_left','blank_left','hp','hc','score_before','actor','action','result','score_after','dec_time','timeout','end_reason','final_score','levels_cleared','total_time','diff','replay','fun','device','name','risk','params'];
+const COLS=['ts','gid','pid','seq','ver','src','type','level','shot_no','live_left','blank_left','hp','hc','score_before','actor','action','result','score_after','dec_time','timeout','end_reason','final_score','levels_cleared','total_time','diff','replay','fun','device','name','risk','params','item_mode','peeked','item_left'];
 /* ---- 可調參數：每局開始時從試算表的 config 分頁讀取；讀不到或不合格就用這裡的內建預設 ---- */
 const KEYS=['L1_live','L1_blank','L1_hp','L1_hc','L2_live','L2_blank','L2_hp','L2_hc','L3_live','L3_blank','L3_hp','L3_hc','a','b','d','bonus','T'];
 const mk=v=>Object.fromEntries(KEYS.map((k,i)=>[k,v[i]]));
-const DEF={low:mk([2,3,2,1, 3,3,2,2, 4,4,2,3, 10,5,5,10,10]),high:mk([2,3,1,1, 3,3,1,2, 4,4,1,3, 20,10,10,20,10])};
+const DEF={low:Object.assign(mk([2,3,2,1, 3,3,2,2, 4,4,2,3, 10,5,5,10,10]),{items:1}),high:Object.assign(mk([2,3,1,1, 3,3,1,2, 4,4,1,3, 20,10,10,20,10]),{items:1})};
 let CFG={low:DEF.low,high:DEF.high,src:{low:'default',high:'default'}},cfgP=Promise.resolve(),risk='',params='';
 function valid(p){if(!p||!KEYS.every(k=>Number.isInteger(p[k])))return false;
  for(let i=1;i<=3;i++){const L=p['L'+i+'_live'],B=p['L'+i+'_blank'],hp=p['L'+i+'_hp'],hc=p['L'+i+'_hc'];
   if(L<1||B<1||hp<1||hc<1||hp>5||hc>5||L+B>12||L<hp+hc-1)return false}   /* 實彈數至少要是雙方生命和 −1，關卡才一定打得完 */
- return['a','b','d','bonus'].every(k=>p[k]>=0&&p[k]<=100)&&p.T>=3&&p.T<=30}
+ return['a','b','d','bonus'].every(k=>p[k]>=0&&p[k]<=100)&&p.T>=3&&p.T<=30&&Number.isInteger(p.items)&&p.items>=0&&p.items<=5}
 function loadCfg(){if(!C.url)return Promise.resolve();
- return fetch(C.url+'?t='+Date.now()).then(r=>r.json()).then(j=>{const o={src:{}};['low','high'].forEach(m=>{const ok=valid(j[m]);o[m]=ok?j[m]:DEF[m];o.src[m]=ok?'sheet':'default'});CFG=o}).catch(()=>{})}
+ return fetch(C.url+'?t='+Date.now()).then(r=>r.json()).then(j=>{const o={src:{}};['low','high'].forEach(m=>{if(j[m]&&j[m].items==null)j[m].items=1});/* 舊的 config 分頁沒有 items 這一列時，預設每關 1 次 */['low','high'].forEach(m=>{const ok=valid(j[m]);o[m]=ok?j[m]:DEF[m];o.src[m]=ok?'sheet':'default'});CFG=o}).catch(()=>{})}
 function apply(m){const p=CFG[m];C.lv=[1,2,3].map(i=>({L:p['L'+i+'_live'],B:p['L'+i+'_blank'],hp:p['L'+i+'_hp'],hc:p['L'+i+'_hc']}));
- C.a=p.a;C.b=p.b;C.d=p.d;C.bonus=p.bonus;C.T=p.T;risk=m;params=CFG.src[m]+'|'+KEYS.map(k=>p[k]).join(',')}
+ C.a=p.a;C.b=p.b;C.d=p.d;C.bonus=p.bonus;C.T=p.T;C.items=p.items;risk=m;params=CFG.src[m]+'|'+KEYS.map(k=>p[k]).join(',')+',items='+p.items}
 const TH={A:{0:.1,15:.9},B:{0:.2,5:.1,15:.3,20:.1,25:.1,35:.1,45:.1}};
 const $=q=>document.querySelector(q),app=$('#app');
 const ls={get:k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-let name=ls.get('bk_name')||'';const esc=x=>String(x).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
+let name=ls.get('bk_name')||'',IT=!!ls.get('bk_item'),itemMode='';/* IT：開始畫面的道具開關 */
+const twTime=()=>new Date(Date.now()+288e5).toISOString().replace('T',' ').slice(0,19);/* 台灣時間 UTC+8 */const esc=x=>String(x).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
 let pid=ls.get('bk_pid');if(!pid){pid='P'+Math.random().toString(36).slice(2,8);ls.set('bk_pid',pid)}
 /* ---- 遊戲引擎（模擬模式共用）---- */
 const shuf=(n,l)=>{const a=Array.from({length:n},(_,i)=>i<l?1:0);for(let i=n-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
@@ -112,7 +117,7 @@ const fin=s=>{const r=state(s);if(r==='clear')s.score+=C.bonus;return r};
 const bot={A:()=>'c',B:s=>s.hp===2&&left(s)[1]>0?'s':'c'};
 /* ---- 紀錄：每發即時存本機並分批送出 ---- */
 let seq=0,gid='',busy=0;const all=ls.get('bk_all')||[];let out=ls.get('bk_out')||[];
-function log(type,o){const r=Object.assign({ts:new Date().toISOString(),gid,pid,name,risk,params,seq:++seq,ver:C.ver,src:'human',type,device:/Mobi|Android|iPhone/.test(navigator.userAgent)?'phone':'pc'},o);all.push(r);out.push(r);ls.set('bk_all',all);ls.set('bk_out',out)}
+function log(type,o){const r=Object.assign({ts:twTime(),gid,pid,name,risk,params,item_mode:itemMode,seq:++seq,ver:C.ver,src:'human',type,device:/Mobi|Android|iPhone/.test(navigator.userAgent)?'phone':'pc'},o);all.push(r);out.push(r);ls.set('bk_all',all);ls.set('bk_out',out)}
 function flush(beacon){if(!C.url||!out.length)return;const b=JSON.stringify(out),n=out.length;
  if(beacon&&navigator.sendBeacon){if(navigator.sendBeacon(C.url,new Blob([b],{type:'text/plain'}))){out=out.slice(n);ls.set('bk_out',out)}return}
  if(busy)return;busy=1;fetch(C.url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:b}).then(()=>{out=out.slice(n);ls.set('bk_out',out)}).catch(()=>{}).finally(()=>{busy=0})}
@@ -128,15 +133,16 @@ function askName(){const chg=!!name;app.innerHTML=`<h1>惡魔輪盤</h1><p>${chg
   if(chg&&v!==name){pid='P'+Math.random().toString(36).slice(2,8);ls.set('bk_pid',pid);gno=0;ls.set('bk_n',0)}
   name=v;ls.set('bk_name',v);home()};$('#nok').onclick=go;if(chg)$('#nno').onclick=home;$('#nm').onkeydown=e=>{if(e.key==='Enter')go()};$('#nm').focus()}
 function home(){if(!name)return askName();app.onclick=null;clearInterval(tm);showHome();cfgP=loadCfg().then(()=>{if($('#golow'))showHome()})}
-function showHome(){const d=m=>{const p=CFG[m];return`我的生命 ${p.L1_hp}／${p.L2_hp}／${p.L3_hp}（三關）。射自己空彈 +${p.a}；射惡魔實彈 +${p.b}、空彈 −${p.d}；過關 +${p.bonus}。每發 ${p.T} 秒。`};
+function showHome(){const d=m=>{const p=CFG[m];return`我的生命 ${p.L1_hp}／${p.L2_hp}／${p.L3_hp}（三關）。射自己空彈 +${p.a}；射惡魔實彈 +${p.b}、空彈 −${p.d}；過關 +${p.bonus}。每發 ${p.T} 秒。${IT?'道具每關 '+p.items+' 次。':''}`};
  app.innerHTML=`<h1>惡魔輪盤</h1><p>共三關。每關彈匣隨機排列，畫面會顯示剩餘的實彈與空彈數。</p><p>射自己：空彈得分並繼續，實彈則生命 −1。射惡魔：實彈得分且惡魔生命 −1；空彈扣分，惡魔會朝你開一槍。</p><p>超時自動射惡魔；整局上限 ${C.G} 秒。你的生命歸零就結束，惡魔生命歸零就過關。</p>
+ <label class=tg><input type=checkbox id=itm ${IT?'checked':''}> 開啟道具：每關可以查看下一發是實彈還是空彈</label>
  <h2>你想玩哪一種？</h2><div class=md><b>低風險</b><p>${d('low')}</p><button class=main id=golow>用低風險開始</button></div><div class=md><b>哪有賭狗天天輸</b><p>${d('high')}</p><button class=main id=gohigh>用高風險開始</button></div>
  <button id=rn>更改名字（換玩家）</button><button id=ex>匯出 CSV</button><p>已玩 ${gno} 局，待同步 ${out.length} 筆。玩家：${esc(name)}（代號 ${pid}）。</p><p id=hs></p>`;
- $('#golow').onclick=()=>start('low');$('#gohigh').onclick=()=>start('high');$('#ex').onclick=csv;$('#rn').onclick=askName}
+ $('#golow').onclick=()=>start('low');$('#gohigh').onclick=()=>start('high');$('#ex').onclick=csv;$('#rn').onclick=askName;$('#itm').onchange=e=>{IT=e.target.checked;ls.set('bk_item',IT);showHome()}}
 async function start(m){$('#golow').disabled=$('#gohigh').disabled=true;$('#hs').textContent='載入設定中…';
  await Promise.race([cfgP,new Promise(r=>setTimeout(r,3000))]);apply(m);
- gno++;ls.set('bk_n',gno);gid=pid+'-'+gno;seq=0;gt=Date.now();cleared=0;s=null;log('game_start',{});lvl(1,0)}
-function lvl(n,sc,ent){hitAt=s&&s.hp===1&&C.lv[s.n-1].hp>1?Date.now()-2400:-1e9;s=newLevel(n,sc);shot=0;const b=left(s);log('level_start',{level:n,live_left:b[0],blank_left:b[1],hp:s.hp,hc:s.hc,score_after:sc});if(ent){draw('',1,{ent:1});const st=$('.stage');setTimeout(()=>{if($('.stage')===st)draw('')},4400)}else draw('')}
+ gno++;ls.set('bk_n',gno);gid=pid+'-'+gno;seq=0;itemMode=IT?'on:'+C.items:'off';gt=Date.now();cleared=0;s=null;log('game_start',{});lvl(1,0)}
+function lvl(n,sc,ent){hitAt=s&&s.hp===1&&C.lv[s.n-1].hp>1?Date.now()-2400:-1e9;s=newLevel(n,sc);s.it=IT?C.items:0;s.pk=-1;shot=0;const b=left(s);log('level_start',{level:n,live_left:b[0],blank_left:b[1],hp:s.hp,hc:s.hc,score_after:sc});if(ent){draw('',1,{ent:1});const st=$('.stage');setTimeout(()=>{if($('.stage')===st)draw('')},4400)}else draw('')}
 const cls=f=>{const ps=f.aim==='self'||/^self/.test(f.a||''),pf=!ps&&(f.aim||f.a);return`${f.aim?'aim-'+f.aim:''} ${f.a?'a-'+f.a:''} ${f.r?'r-'+f.r:''} ${ps?'ps':pf?'pf':''} ${f.k?'kill':''} ${f.ent?'a-ent':''}`};
 let hitAt=-1e9;
 const im=(n,c)=>`<img class="dh ${c||''}" src="assets/${n}.png" alt="">`;
@@ -158,11 +164,11 @@ function draw(msg,dis,fx){clearInterval(tm);let blood='';const[l,b]=left(s),f=fx
  /* 中彈：一圈半透明血跡。剩 1 滴血時一直留著；否則約 6 秒內慢慢消散（跨畫面重繪也會接續） */
  if(s.hp===1&&C.lv[s.n-1].hp>1)blood=`<div class="blood stay" style="animation-delay:${hurt?bd:-1}s,${hurt?bd:0}s"></div>`;
  else if(s.hp>1&&Date.now()-hitAt<6000)blood=`<div class="blood fade" style="animation-delay:${(hitAt-Date.now())/1000}s"></div>`;
- app.innerHTML=`<div class="stage ${cls(f)}"><div class=world>${scene(f,pl)}<div class=top><div class=bar><span id=bar style="width:100%"></span></div><span id=tl>${dis?'':C.T+' 秒'}</span></div>${blood}<div id=msg>${msg}</div>${dis?'':'<div class=btns><button class=main id=bs>射自己</button><button id=bc>射惡魔</button></div>'}</div><div class=ov></div><div class=gl></div></div>`;
- if(dis)return;$('#bs').onclick=()=>act('s');$('#bc').onclick=()=>act('c');t0=Date.now();
+ app.innerHTML=`<div class="stage ${cls(f)}"><div class=world>${scene(f,pl)}<div class=top><div class=bar><span id=bar style="width:100%"></span></div><span id=tl>${dis?'':C.T+' 秒'}</span></div>${blood}<div id=msg>${msg}</div>${dis?'':'<div class=btns><button class=main id=bs>射自己</button><button id=bc>射惡魔</button></div>'+itemUI()}</div><div class=ov></div><div class=gl></div></div>`;
+ if(dis)return;$('#bs').onclick=()=>act('s');$('#bc').onclick=()=>act('c');if($('#bi'))$('#bi').onclick=peek;t0=Date.now();
  tm=setInterval(()=>{if(Date.now()-gt>=C.G*1000)return tmo();const r=Math.max(0,C.T-(Date.now()-t0)/1000);$('#tl').textContent=Math.ceil(r)+' 秒｜全局剩 '+Math.ceil(C.G-(Date.now()-gt)/1000)+' 秒';$('#bar').style.width=r/C.T*100+'%';if(r<=0)act('c',1)},100)}
 /* ---- 音效：第一次點擊後才能播放（手機瀏覽器的限制） ---- */
-const VOL=.6;/* 音效音量 0～1 */
+const VOL=.8;/* 音效音量 0～1 */
 const SN=['shut_player','shut_demon','loaded','dry_fire'],SFX={},AEL={};let AC=null;
 SN.forEach(n=>{try{const a=new Audio('assets/'+n+'.mp3');a.preload='auto';AEL[n]=a}catch(e){}});
 function unlock(){try{if(!AC){AC=new(window.AudioContext||window.webkitAudioContext)();SN.forEach(n=>fetch('assets/'+n+'.mp3').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()}).then(b=>new Promise((ok,no)=>AC.decodeAudioData(b,ok,no))).then(d=>{SFX[n]=d}).catch(()=>{}))}
@@ -171,10 +177,16 @@ function unlock(){try{if(!AC){AC=new(window.AudioContext||window.webkitAudioCont
 function sfx(n){try{if(AC&&SFX[n]&&AC.state==='running'){const b=AC.createBufferSource();b.buffer=SFX[n];const g=AC.createGain();g.gain.value=VOL;b.connect(g);g.connect(AC.destination);b.start();return}
  const a=AEL[n];if(a){const c=a.cloneNode();c.volume=VOL;c.play().catch(()=>{})}}catch(e){}}
 ['pointerdown','touchend','click','keydown'].forEach(t=>document.addEventListener(t,unlock,true));
+/* ---- 道具：查看下一發 ---- */
+const pkHTML=()=>`<div class="itm pk ${s.sh[s.i]?'lv':'bk'}" role=status>下一發是 <b>${s.sh[s.i]?'實彈':'空彈'}</b></div>`;
+function itemUI(){if(!IT||s.i>=s.sh.length)return'';if(s.pk===s.i)return pkHTML();return s.it>0?`<button class=itm id=bi>查看下一發（剩 ${s.it} 次）</button>`:''}
+function peek(){if(!s.it||s.pk===s.i||s.i>=s.sh.length)return;s.it--;s.pk=s.i;const b=left(s);
+ log('item',{level:s.n,shot_no:shot+1,live_left:b[0],blank_left:b[1],hp:s.hp,hc:s.hc,score_before:s.score,actor:'player',action:'peek',result:s.sh[s.i]?'live':'blank',score_after:s.score,item_left:s.it});
+ const e=$('#bi');if(e)e.outerHTML=pkHTML()}
 function act(a,to){clearInterval(tm);sfx('loaded');const dt=Math.min(C.T,(Date.now()-t0)/1000);draw('瞄準中…',1,{aim:a==='s'?'self':'dev'});setTimeout(()=>fire(a,to,dt),1500)}
-function fire(a,to,dt){const pre=a==='c'?face({aim:'dev'}):'',b=left(s),sb=s.score,hp=s.hp,hc=s.hc,ev=shoot(s,a),m=[];
+function fire(a,to,dt){const pk=s.pk===s.i?(s.sh[s.i]?'live':'blank'):'',pre=a==='c'?face({aim:'dev'}):'',b=left(s),sb=s.score,hp=s.hp,hc=s.hc,ev=shoot(s,a),m=[];
  if(to)m.push('超時，自動射惡魔。');
- ev.forEach((e,j)=>{log('shot',{level:s.n,shot_no:++shot,live_left:b[0],blank_left:j?b[1]-1:b[1],hp,hc,score_before:j?ev[0].sc:sb,actor:e.actor,action:j?'retaliate':to?'timeout_computer':a==='s'?'self':'computer',result:e.x?'live':'blank',score_after:e.sc,dec_time:j?'':dt.toFixed(2),timeout:to?1:0});
+ ev.forEach((e,j)=>{log('shot',{level:s.n,shot_no:++shot,live_left:b[0],blank_left:j?b[1]-1:b[1],hp,hc,score_before:j?ev[0].sc:sb,actor:e.actor,action:j?'retaliate':to?'timeout_computer':a==='s'?'self':'computer',result:e.x?'live':'blank',score_after:e.sc,dec_time:j?'':dt.toFixed(2),timeout:to?1:0,peeked:j?'':pk,item_left:j?'':s.it});
   m.push(j?`惡魔反擊：${e.x?'實彈，你的生命 −1':'空彈'}。`:e.tgt==='self'?`對自己開槍：${e.x?'實彈，生命 −1':'空彈，+'+C.a+' 分'}。`:`對惡魔開槍：${e.x?'實彈，+'+C.b+' 分，惡魔生命 −1':'空彈，−'+C.d+' 分'}。`)});
  const r=fin(s),e0=ev[0],e1=ev[1],fx={a:e0.tgt==='self'?(e0.x?'selfl':'selfb'):(e0.x?'hitd':'clkd'),r:e1?(e1.x?'live':'blank'):'',h0:hp,k:r==='clear'},full=m.join('<br>');if(fx.a==='hitd')fx.pf=pre;
  /* 結果在開槍那一刻才揭曉：反擊前只顯示玩家這一發之後的狀態 */
