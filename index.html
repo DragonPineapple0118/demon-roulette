@@ -88,8 +88,8 @@ body.portal .top,body.portal .bar,body.portal #msg,body.portal .btns,body.portal
 .shake .leaf{animation:ishake .35s}@keyframes ishake{25%{translate:-.4% 0}75%{translate:.4% 0}}
 .go .fo{animation:ifo .5s both;pointer-events:none}@keyframes ifo{to{opacity:0}}
 .go .cam{animation:izoom 1s .4s both,ipush .9s 2.4s forwards}
-@keyframes izoom{from{transform:none}to{transform:translate(-48.8%,-20.7%) scale(1.35)}}
-@keyframes ipush{from{transform:translate(-48.8%,-20.7%) scale(1.35)}to{transform:translate(-302.3%,-203.4%) scale(4.8)}}
+@keyframes izoom{from{transform:none}to{transform:translate(calc(var(--vc,50%) - 98.82%),-20.7%) scale(1.35)}}
+@keyframes ipush{from{transform:translate(calc(var(--vc,50%) - 98.82%),-20.7%) scale(1.35)}to{transform:translate(calc(var(--vc,50%) - 352.32%),-203.4%) scale(4.8)}}
 .go .leaf{animation:iopen .9s 1.5s both}@keyframes iopen{to{transform:rotateY(80deg);filter:brightness(.55)}}
 
 .vol{position:fixed;left:10px;bottom:10px;z-index:40;display:flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;background:#000a;color:#ddd;font-size:12px;opacity:.55;transition:opacity .2s}
@@ -97,6 +97,11 @@ body.portal .top,body.portal .bar,body.portal #msg,body.portal .btns,body.portal
 .vol input{width:90px;margin:0;accent-color:#d9b44a}.vol span{min-width:34px;text-align:right;font-variant-numeric:tabular-nums}
 .quit{position:absolute;right:1.2%;top:5%;z-index:7;width:auto;margin:0;padding:6px 14px;font-size:14px;background:#000b;color:#ddd;border:1px solid #666;border-radius:8px}.quit.cf{background:#7a1c12;color:#fff;border-color:#e0533f}.quit.tu{background:#c0392b;color:#fff;border-color:#ffb3a8;font-weight:700;animation:tup 1s ease-in-out infinite}@keyframes tup{50%{box-shadow:0 0 14px #ff6b55}}
 body.portal .quit{opacity:0!important}
+/* 16:10 等比較窄的螢幕：畫面填滿高度、裁掉左右（開場只裁右邊），邊上的介面往內移到看得到的範圍 */
+html.crop .world,html.crop .iw{width:177.78vh;width:177.78dvh;max-width:none}
+html.crop .intro{justify-items:start}html.crop .world{justify-self:start;margin-left:var(--wx)}
+html.crop .top{left:var(--cx);right:var(--cx)}html.crop #msg{left:calc(3% + var(--cx))}html.crop .quit{right:calc(1.2% + var(--cx))}
+html.crop .imeta{right:calc(1.5% + var(--cxi))}html.crop .ihint{right:var(--cxi)}
 .hh{opacity:0}.r-live .h1,.r-blank .h1{animation:hh1 2.1s both,grab .45s .35s ease-in-out both}@keyframes grab{from{translate:37% 20%;scale:2.2}to{translate:0 0;scale:1}}.r-live .h2,.r-blank .h2{animation:hh2 .01s 2.1s forwards}.r-blank .h2{animation:hh2 .01s 2.1s forwards,ck .3s 3.6s}@keyframes hh1{0%,16.6%{opacity:0}16.7%,99.9%{opacity:1}100%{opacity:0}}@keyframes hh2{to{opacity:1}}.r-live .w2,.r-blank .w2{animation:hidew .01s .35s forwards}@keyframes hidew{to{opacity:0}}
 .r-live .dv,.r-blank .dv{animation:none}.r-live .dh,.r-blank .dh{animation:tilt .4s 2.1s ease-out forwards}@keyframes tilt{to{rotate:-4deg}}.ov.on{background:#000;animation:bk 2.4s both}.r-live .scene{animation:sh .4s 3.65s}
 .dk{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none}.a-hitd .dk{animation:dk 2.6s both}.a-hitd .tb,.a-hitd .gw{animation:glo .1s both}@keyframes dk{0%,38%{opacity:.9}100%{opacity:0}}@keyframes glo{0%,95%{filter:brightness(2.4) drop-shadow(0 0 14px #ffe9b0)}100%{filter:none}}
@@ -319,5 +324,8 @@ function simPage(k){const n=+(/n=(\d+)/.exec(location.search)||[0,20000])[1],o={
  for(let g=0;g<n;g++){let sc=0,lv=0;for(let m=1;m<=3;m++){const x=newLevel(m,sc);while(!state(x))shoot(x,bot[k](x));const r=fin(x);sc=x.score;if(m===1)o.p1[sc]=(o.p1[sc]||0)+1;if(r!=='clear')break;o.c[m-1]++;lv++}o.tot+=sc;if(lv===3)o.all++}
  const th=TH[k],xs=[...new Set(Object.keys(o.p1).concat(Object.keys(th)))].sort((a,b)=>a-b);
  app.innerHTML=`<h1>模擬：策略 ${k}</h1><p>${n} 局，資料來源為模擬，不會上傳。</p><p>第一關通關率 ${(o.c[0]/n).toFixed(3)}，連過兩關 ${(o.c[1]/n).toFixed(3)}，整局通關 ${(o.all/n).toFixed(3)}，平均總分 ${(o.tot/n).toFixed(2)}</p><table><tr><th>第一關得分</th><th>模擬</th><th>理論</th></tr>${xs.map(x=>`<tr><td>${x}</td><td>${((o.p1[x]||0)/n).toFixed(3)}</td><td>${(th[x]||0).toFixed(3)}</td></tr>`).join('')}</table>`}
+function fit(){const w=innerWidth,h=innerHeight,ar=w/h,c=ar>=1.55&&ar<16/9-.01,R=document.documentElement,W=h*16/9;
+ R.classList.toggle('crop',c);R.style.setProperty('--cx',c?((W-w)/2/W*100).toFixed(3)+'%':'0%');R.style.setProperty('--cxi',c?((W-w)/W*100).toFixed(3)+'%':'0%');R.style.setProperty('--vc',c?(w/2/W*100).toFixed(3)+'%':'50%');R.style.setProperty('--wx',c?(-(W-w)/2).toFixed(1)+'px':'0px')}
+addEventListener('resize',fit);fit();
 const sm=/sim=([AB])/.exec(location.search);sm?simPage(sm[1]):home();
 </script></body></html>
