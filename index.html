@@ -255,13 +255,32 @@ function face(f){if(f.pf){const g=Object.assign({},f);delete g.pf;return`<div cl
  return im('face_'+n)+(BL(e.mouth)?im('blush'+BL(e.mouth)):'')+eyes(e,bl)+im('eyebrows1')+im('mouth'+e.mouth)}
 const scene=(f,pl)=>`<div class=scene><div class=dvs aria-hidden="true"><div class=dv><img class=dh src="assets/back_hair.png" alt=""><img src="assets/body.png" alt=""><img src="assets/cape.png" alt="">${face(f)}</div></div><div class=dk></div><div class=tb><img src="assets/table.png" alt="">${pl}</div><div class=dhs aria-hidden="true"><img class="hh h1" src="assets/demon_take.png" alt=""><img class="hh h2" src="assets/demon_shot.png" alt=""><img class="pa pal" src="assets/demon_hand2.png" alt=""><img class="pa par" src="assets/demon_hand2.png" alt=""><img class="hnd hl" src="assets/demon_hand1.png" alt=""><img class="hnd hr" src="assets/demon_hand1.png" alt=""></div><div class=gw><div class=w1><img src="assets/gun_take.png" alt=""></div><div class=w2><img src="assets/gun_aim.png" alt=""></div><div class=w3><img src="assets/gun_self.png" alt=""></div></div></div>`;
 const hearts=(n,m)=>Array.from({length:m},(_,i)=>`<img src="assets/heart.png" alt=""${i<n?'':' class=lost'}>`).join('');
+/* 開槍姿勢 → 舉槍姿勢：先往舉槍的位置移一點，再兩張交叉淡入淡出（24fps 一格一格） */
+function gunPrev(){const st=$('.stage');if(!st||st.classList.contains('kill'))return null;
+ for(const w of ['w2','w3']){const d=st.querySelector('.gw .'+w),im=d&&d.querySelector('img');if(!im)continue;
+  if(parseFloat(getComputedStyle(d).opacity)>.5&&getComputedStyle(st.querySelector('.gw')).opacity>.5){const r=im.getBoundingClientRect();if(r.height>0)return{w,r}}}return null}
+function gunSwap(gp,f){if(!gp||f.aim||f.a||f.ent)return;const st=$('.stage');if(!st||/\b(ps|pf)\b/.test(st.className))return;
+ const d0=st.querySelector('.gw .'+gp.w),d1=st.querySelector('.gw .w1');if(!d0||!d1)return;const i0=d0.querySelector('img'),i1=d1.querySelector('img');
+ const r1=i1.getBoundingClientRect(),r0=gp.r;if(!r1.height)return;
+ const dx=(r1.left+r1.width/2)-(r0.left+r0.width/2),dy=r1.bottom-r0.bottom,k=r1.height/r0.height;
+ /* 新畫面裡的開槍圖本身位置可能跟舊畫面不同（抖動、後座力），先算出從它到舊位置的差 */
+ const rr=i0.getBoundingClientRect(),ox=(r0.left+r0.width/2)-(rr.left+rr.width/2),oy=r0.bottom-rr.bottom,ks=r0.height/(rr.height||r0.height);
+ const fps=24,D=.55,n=Math.round(D*fps),ez=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2,cl=x=>Math.min(1,Math.max(0,x)),K0=[],K1=[],O0=[],O1=[];
+ for(let i=0;i<=n;i++){const t=i/n,u=ez(t),a=ez(cl((t-.3)/.6));/* u：沿路徑走的比例；a：交叉淡化進度（前 30% 只移動） */
+  K0.push({transform:`translate(${(ox+dx*u).toFixed(1)}px,${(oy+dy*u).toFixed(1)}px) scale(${(ks*Math.pow(k,u)).toFixed(4)})`,easing:'steps(1,end)'});
+  K1.push({transform:`translate(${(-dx*(1-u)).toFixed(1)}px,${(-dy*(1-u)).toFixed(1)}px) scale(${Math.pow(1/k,1-u).toFixed(4)})`,easing:'steps(1,end)'});
+  O0.push({opacity:1-a,easing:'steps(1,end)'});O1.push({opacity:a,easing:'steps(1,end)'})}
+ const o={duration:D*1000,fill:'backwards'};
+ try{[i0,i1].forEach(e=>e.style.transformOrigin='50% 100%');i0.animate(K0,o);i1.animate(K1,o);d0.animate(O0,o);d1.animate(O1,o)}catch(x){}}
 function draw(msg,dis,fx){if(quitted)return;clearInterval(tm);let blood='';const[l,b]=left(s),f=fx||{},w=f.show||{},hurt=f.h0>s.hp,bd=hurt?(f.r?3.7:.1):0,
  pl=`<b class=n id=vb>${w.b??b}</b><b class=n id=vl>${w.l??l}</b><div class="hp hpd" role=img aria-label="惡魔生命 ${s.hc}">${hearts(s.hc,C.lv[s.n-1].hc)}</div><div class="hp hpm" id=vhp role=img aria-label="我的生命">${hearts(w.hp??s.hp,C.lv[s.n-1].hp)}</div><div class=inf><span>關卡 ${s.n}/3</span><span>分數 ${s.score}</span></div>`;
  if(hurt)hitAt=Date.now()+bd*1000;
  /* 中彈：一圈半透明血跡。剩 1 滴血時一直留著；否則約 6 秒內慢慢消散（跨畫面重繪也會接續） */
  if(s.hp===1&&C.lv[s.n-1].hp>1)blood=`<div class="blood stay" style="animation-delay:${hurt?bd:-1}s,${hurt?bd:0}s"></div>`;
  else if(s.hp>1&&Date.now()-hitAt<6000)blood=`<div class="blood fade" style="animation-delay:${(hitAt-Date.now())/1000}s"></div>`;
+ const gp=gunPrev();
  app.innerHTML=`<div class="stage ${cls(f)}"><div class=world>${scene(f,pl)}<button class=quit id=bq>結束遊戲</button><div class=top><div class=bar><span id=bar style="width:100%"></span></div><span id=tl>${dis?'':C.T+' 秒'}</span></div>${blood}<div id=msg>${msg}</div>${dis?'':'<div class=btns><button class=main id=bs>射自己</button><button id=bc>射惡魔</button></div>'+itemUI()}</div><div class=ov></div><div class=gl></div></div>`;
+ gunSwap(gp,f);
  $('#bq').onclick=quit;tuMark();if(dis)return;$('#bs').onclick=()=>act('s');$('#bc').onclick=()=>act('c');if($('#bi'))$('#bi').onclick=peek;t0=Date.now();
  tm=setInterval(()=>{const r=Math.max(0,C.T-(Date.now()-t0)/1000);$('#tl').textContent=Math.ceil(r)+' 秒｜'+(sessOver()?'試玩時間到':'試玩剩 '+mmss(sessLeft()));$('#bar').style.width=r/C.T*100+'%';if(r<=0)act('c',1)},100)}
 /* ---- 音效：第一次點擊後才能播放（手機瀏覽器的限制） ---- */
