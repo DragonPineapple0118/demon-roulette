@@ -138,11 +138,12 @@ function valid(p){if(!p||!KEYS.every(k=>Number.isInteger(p[k])))return false;
 function loadCfg(){if(!C.url)return Promise.resolve();
  return fetch(C.url+'?t='+Date.now()).then(r=>r.json()).then(j=>{const o={src:{}};['low','high'].forEach(m=>{if(j[m]&&j[m].items==null)j[m].items=1});/* 舊的 config 分頁沒有 items 這一列時，預設每關 1 次 */['low','high'].forEach(m=>{const ok=valid(j[m]);o[m]=ok?j[m]:DEF[m];o.src[m]=ok?'sheet':'default'});CFG=o}).catch(()=>{})}
 function apply(m){const p=CFG[m];C.lv=[1,2,3].map(i=>({L:p['L'+i+'_live'],B:p['L'+i+'_blank'],hp:p['L'+i+'_hp'],hc:p['L'+i+'_hc']}));
- C.a=p.a;C.b=p.b;C.d=p.d;C.bonus=p.bonus;C.T=p.T;C.items=p.items;risk=m;params=CFG.src[m]+'|'+KEYS.map(k=>p[k]).join(',')+',items='+p.items}
+ C.a=p.a;C.b=p.b;C.d=p.d;C.bonus=p.bonus;C.T=p.T;C.items=p.items;risk=m;params=CFG.src[m]+'|'+KEYS.map(k=>p[k]).join(',')+',items='+p.items+(SPD>1?',spd=2':'')}
 
 const $=q=>document.querySelector(q),app=$('#app');
 const ls={get:k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-let name=ls.get('bk_name')||'',IT=!!ls.get('bk_item'),itemMode='';/* IT：開始畫面的道具開關 */
+let name=ls.get('bk_name')||'',IT=!!ls.get('bk_item'),SPD=ls.get('bk_spd')===2?2:1,itemMode='';/* SPD：加速模式，動畫和音效 2 倍速（決策倒數和試玩時間不變） */
+const W=(f,ms)=>setTimeout(f,ms/SPD);/* 跟動畫對齊的計時，會跟著加速 *//* IT：開始畫面的道具開關 */
 const twTime=()=>new Date(Date.now()+288e5).toISOString().replace('T',' ').slice(0,19);/* 台灣時間 UTC+8 */const esc=x=>String(x).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
 let pid=ls.get('bk_pid');if(!pid){pid='P'+Math.random().toString(36).slice(2,8);ls.set('bk_pid',pid)}
 /* ---- 遊戲引擎（模擬模式共用）---- */
@@ -214,21 +215,24 @@ function intro(){pick='';app.innerHTML='';let L=$('#ilayer');if(!L){L=document.c
  <button class="hsp fo" id=hhigh style="left:3.2%;top:43.4%;width:27.4%;height:38%" aria-label="選擇高波動：哪有賭狗天天輸"></button>
  <button class=hsp id=hdoor style="left:61.2%;top:22%;width:24.1%;height:60.8%" aria-label="開門進入遊戲"></button>
  <img class=fo src="assets/intro_props_button.png" alt=""><img class="sgl fo ${IT?'on':''}" id=pon src="assets/intro_props_button_light.png" alt="">
- <button class="hsp fo" id=itog style="left:44.6%;top:41.8%;width:8.8%;height:9.5%" aria-pressed=${IT} aria-label="道具：${IT?'開':'關'}"></button></div>
+ <button class="hsp fo" id=itog style="left:44.6%;top:41.8%;width:8.8%;height:9.5%" aria-pressed=${IT} aria-label="道具：${IT?'開':'關'}"></button>
+ <img class=fo src="assets/intro_speedup_button.png" alt=""><img class="sgl fo ${SPD>1?'on':''}" id=son src="assets/intro_speedup_button_light.png" alt="">
+ <button class="hsp fo" id=stog style="left:44.6%;top:50.6%;width:8.8%;height:9.5%" aria-pressed=${SPD>1} aria-label="加速：${SPD>1?'開':'關'}"></button></div>
  <div class="imeta fo"><span>${esc(name)}（${pid}）・已玩 ${gno} 局・試玩${sess&&sess.pid===pid?'剩 '+mmss(sessLeft()):' '+(C.G/60)+' 分鐘'}・待同步 ${out.length} 筆</span><button id=rn>換玩家</button><button id=ex>匯出 CSV</button></div>
  <p class="ihint fo" id=ih role=status>選一個牌子，再按門進入</p></div></div>`;
  signText();const iw=$('.iw');
- const sel=m=>{pick=m;['low','high'].forEach(k=>{$('#l'+k).classList.toggle('on',k===m);$('#s'+k).classList.toggle('dim',k!==m);$('#t'+k).classList.toggle('dim',k!==m)});iw.classList.add('ready');$('#ih').className='ihint fo';$('#ih').textContent=(m==='low'?'低波動':'高波動（哪有賭狗天天輸）')+'・道具'+(IT?'開':'關')+'　→　按門進入'};
+ const sel=m=>{pick=m;['low','high'].forEach(k=>{$('#l'+k).classList.toggle('on',k===m);$('#s'+k).classList.toggle('dim',k!==m);$('#t'+k).classList.toggle('dim',k!==m)});iw.classList.add('ready');$('#ih').className='ihint fo';$('#ih').textContent=(m==='low'?'低波動':'高波動（哪有賭狗天天輸）')+'・道具'+(IT?'開':'關')+(SPD>1?'・加速':'')+'　→　按門進入'};
  $('#hlow').onclick=()=>sel('low');$('#hhigh').onclick=()=>sel('high');
  $('#itog').onclick=()=>{IT=!IT;ls.set('bk_item',IT);const t=$('#itog');$('#pon').classList.toggle('on',IT);t.setAttribute('aria-pressed',IT);t.setAttribute('aria-label','道具：'+(IT?'開':'關'));if(pick)sel(pick)};
+ $('#stog').onclick=()=>{SPD=SPD>1?1:2;ls.set('bk_spd',SPD);const t=$('#stog');$('#son').classList.toggle('on',SPD>1);t.setAttribute('aria-pressed',SPD>1);t.setAttribute('aria-label','加速：'+(SPD>1?'開':'關'));if(pick)sel(pick)};
  $('#rn').onclick=askName;$('#ex').onclick=csv;
  $('#hdoor').onclick=()=>{if(iw.classList.contains('go')||iw.classList.contains('quick'))return;if(sessOver()){$('#ih').className='ihint fo warn';$('#ih').textContent='這位玩家的 '+(C.G/60)+' 分鐘試玩時間已到，請按右上角「換玩家」';return}if(!pick){iw.classList.remove('shake');void iw.offsetWidth;iw.classList.add('shake');$('#ih').className='ihint fo warn';$('#ih').textContent='先選一個牌子（低波動或高波動）';return}
   iw.classList.remove('ready','shake');const m=pick;document.body.classList.add('portal');
   if(ls.get('bk_door')===pid){/* 這位玩家已經看過開門動畫：淡出後直接進遊戲 */iw.classList.add('quick');
-   setTimeout(()=>{const B=document.body.classList;start(m,1).then(()=>{closeIntro();B.add('qin');setTimeout(()=>B.remove('qin'),800)})},500);return}
+   W(()=>{const B=document.body.classList;start(m,1).then(()=>{closeIntro();B.add('qin');W(()=>B.remove('qin'),800)})},500);return}
   ls.set('bk_door',pid);iw.classList.add('go');
-  setTimeout(()=>start(m,1),1300);/* 門還關著時就在門後開始遊戲，打開門看到的就是遊戲畫面 */
-  setTimeout(()=>document.body.classList.add('portal2'),2400);setTimeout(closeIntro,3350)}}
+  W(()=>start(m,1),1300);/* 門還關著時就在門後開始遊戲，打開門看到的就是遊戲畫面 */
+  W(()=>document.body.classList.add('portal2'),2400);W(closeIntro,3350)}}
 function showHome(){closeIntro();const d=m=>{const p=CFG[m];return`我的生命 ${p.L1_hp}／${p.L2_hp}／${p.L3_hp}（三關）。射自己空彈 +${p.a}；射惡魔實彈 +${p.b}、空彈 −${p.d}；過關 +${p.bonus}。每發 ${p.T} 秒。${IT?'道具每關 '+p.items+' 次。':''}`};
  app.innerHTML=`<h1>惡魔輪盤</h1><p>共三關。每關彈匣隨機排列，畫面會顯示剩餘的實彈與空彈數。</p><p>射自己：空彈得分並繼續，實彈則生命 −1。射惡魔：實彈得分且惡魔生命 −1；空彈扣分，惡魔會朝你開一槍。</p><p>超時自動射惡魔；每位玩家試玩 ${C.G/60} 分鐘，時間內可以玩很多局；時間到可以打完這一發，再按右上角按鈕結束。你的生命歸零就結束，惡魔生命歸零就過關。</p>
  <label class=tg><input type=checkbox id=itm ${IT?'checked':''}> 開啟道具：每關可以查看下一發是實彈還是空彈</label>
@@ -238,11 +242,11 @@ function showHome(){closeIntro();const d=m=>{const p=CFG[m];return`我的生命 
 async function start(m,ent){if(sessOver())return home();if(!sess||sess.pid!==pid){sess={pid,t0:Date.now()};ls.set('bk_sess',sess)}inGame=1;if($('#golow')){$('#golow').disabled=$('#gohigh').disabled=true;$('#hs').textContent='載入設定中…'}
  await Promise.race([cfgP,new Promise(r=>setTimeout(r,3000))]);apply(m);
  gno++;ls.set('bk_n',gno);gid=pid+'-'+gno;seq=0;itemMode=IT?'on:'+C.items:'off';gt=Date.now();cleared=0;s=null;quitted=0;log('game_start',{});lvl(1,0,ent)}
-function lvl(n,sc,ent){if(quitted)return;hitAt=s&&s.hp===1&&C.lv[s.n-1].hp>1?Date.now()-2400:-1e9;s=newLevel(n,sc);s.it=IT?C.items:0;s.pk=-1;shot=0;if(n>1)resend(gid);const b=left(s);log('level_start',{level:n,live_left:b[0],blank_left:b[1],hp:s.hp,hc:s.hc,score_after:sc});if(ent){draw('',1,{ent:1});const st=$('.stage');setTimeout(()=>{if($('.stage')===st)draw('')},3100)}else draw('')}
+function lvl(n,sc,ent){if(quitted)return;hitAt=s&&s.hp===1&&C.lv[s.n-1].hp>1?Date.now()-2400:-1e9;s=newLevel(n,sc);s.it=IT?C.items:0;s.pk=-1;shot=0;if(n>1)resend(gid);const b=left(s);log('level_start',{level:n,live_left:b[0],blank_left:b[1],hp:s.hp,hc:s.hc,score_after:sc});if(ent){draw('',1,{ent:1});const st=$('.stage');W(()=>{if($('.stage')===st)draw('')},3100)}else draw('')}
 const cls=f=>{const ps=f.aim==='self'||/^self/.test(f.a||''),pf=!ps&&(f.aim||f.a);return`${f.aim?'aim-'+f.aim:''} ${f.a?'a-'+f.a:''} ${f.r?'r-'+f.r:''} ${ps?'ps':pf?'pf':''} ${f.k?'kill':''} ${f.ent?'a-ent':''}`};
 let hitAt=-1e9;
 const im=(n,c)=>`<img class="dh ${c||''}" src="assets/${n}.png" alt="">`;
-['intro_bg','intro_door','intro_low','intro_high','intro_low_light','intro_high_light','intro_props_button','intro_props_button_light','back_hair','body','cape','face_1','face_2','face_3','blush1','blush2','eyebrows1','eyes1','eyes2','eyes3','eyeballs1','eyeballs2','eyeballs_for_eyes2','mouth1','mouth2','mouth3','mouth4','mouth5','mouth6','mouth8','table','gun_take','gun_aim','gun_self','demon_take','demon_shot','demon_hand1','demon_hand2','bg_pc','bg_phone','heart'].forEach(n=>{new Image().src='assets/'+n+'.png'});
+['intro_bg','intro_door','intro_low','intro_high','intro_low_light','intro_high_light','intro_props_button','intro_props_button_light','intro_speedup_button','intro_speedup_button_light','back_hair','body','cape','face_1','face_2','face_3','blush1','blush2','eyebrows1','eyes1','eyes2','eyes3','eyeballs1','eyeballs2','eyeballs_for_eyes2','mouth1','mouth2','mouth3','mouth4','mouth5','mouth6','mouth8','table','gun_take','gun_aim','gun_self','demon_take','demon_shot','demon_hand1','demon_hand2','bg_pc','bg_phone','heart'].forEach(n=>{new Image().src='assets/'+n+'.png'});
 const BL=m=>m===8?0:m===3?2:1;/* 嘴巴編號 → 腮紅編號 */
 function face(f){if(f.pf){const g=Object.assign({},f);delete g.pf;return`<div class="ph fpre">${f.pf}</div><div class="ph fpost">${face(g)}</div>`}
  const n=s.n,F=C.faces,[l,b]=left(s),act=F.act[n-1],ph=(c,h)=>h?`<div class="ph ${c}">${h}</div>`:'',
@@ -274,10 +278,10 @@ function gunSwap(gp,f){if(!gp||f.aim||f.a||f.ent)return;const st=$('.stage');if(
  try{[i0,i1].forEach(e=>e.style.transformOrigin='50% 100%');i0.animate(K0,o);i1.animate(K1,o);d0.animate(O0,o);d1.animate(O1,o)}catch(x){}}
 function draw(msg,dis,fx){if(quitted)return;clearInterval(tm);let blood='';const[l,b]=left(s),f=fx||{},w=f.show||{},hurt=f.h0>s.hp,bd=hurt?(f.r?3.7:.1):0,
  pl=`<b class=n id=vb>${w.b??b}</b><b class=n id=vl>${w.l??l}</b><div class="hp hpd" role=img aria-label="惡魔生命 ${s.hc}">${hearts(s.hc,C.lv[s.n-1].hc)}</div><div class="hp hpm" id=vhp role=img aria-label="我的生命">${hearts(w.hp??s.hp,C.lv[s.n-1].hp)}</div><div class=inf><span>關卡 ${s.n}/3</span><span>分數 ${s.score}</span></div>`;
- if(hurt)hitAt=Date.now()+bd*1000;
+ if(hurt)hitAt=Date.now()+bd*1000/SPD;
  /* 中彈：一圈半透明血跡。剩 1 滴血時一直留著；否則約 6 秒內慢慢消散（跨畫面重繪也會接續） */
  if(s.hp===1&&C.lv[s.n-1].hp>1)blood=`<div class="blood stay" style="animation-delay:${hurt?bd:-1}s,${hurt?bd:0}s"></div>`;
- else if(s.hp>1&&Date.now()-hitAt<6000)blood=`<div class="blood fade" style="animation-delay:${(hitAt-Date.now())/1000}s"></div>`;
+ else if(s.hp>1&&Date.now()-hitAt<6000/SPD)blood=`<div class="blood fade" style="animation-delay:${(hitAt-Date.now())/1000*SPD}s"></div>`;
  const gp=gunPrev();
  app.innerHTML=`<div class="stage ${cls(f)}"><div class=world>${scene(f,pl)}<button class=quit id=bq>結束遊戲</button><div class=top><div class=bar><span id=bar style="width:100%"></span></div><span id=tl>${dis?'':C.T+' 秒'}</span></div>${blood}<div id=msg>${msg}</div>${dis?'':'<div class=btns><button class=main id=bs>射自己</button><button id=bc>射惡魔</button></div>'+itemUI()}</div><div class=ov></div><div class=gl></div></div>`;
  gunSwap(gp,f);
@@ -290,8 +294,8 @@ SN.forEach(n=>{try{const a=new Audio('assets/'+n+'.mp3');a.preload='auto';AEL[n]
 function unlock(){try{if(!AC){AC=new(window.AudioContext||window.webkitAudioContext)();SN.forEach(n=>fetch('assets/'+n+'.mp3').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()}).then(b=>new Promise((ok,no)=>AC.decodeAudioData(b,ok,no))).then(d=>{SFX[n]=d}).catch(()=>{}))}
  if(AC.state!=='running')AC.resume();const b=AC.createBufferSource();b.buffer=AC.createBuffer(1,1,22050);b.connect(AC.destination);b.start()}catch(e){}}
 /* 先用 Web Audio（延遲低）；還沒載好或不支援時改用 <audio> */
-function sfx(n){try{if(AC&&SFX[n]&&AC.state==='running'){const b=AC.createBufferSource();b.buffer=SFX[n];const g=AC.createGain();g.gain.value=VOL;b.connect(g);g.connect(AC.destination);b.start();return}
- const a=AEL[n];if(a){const c=a.cloneNode();c.volume=VOL;c.play().catch(()=>{})}}catch(e){}}
+function sfx(n){try{if(AC&&SFX[n]&&AC.state==='running'){const b=AC.createBufferSource();b.buffer=SFX[n];b.playbackRate.value=SPD;const g=AC.createGain();g.gain.value=VOL;b.connect(g);g.connect(AC.destination);b.start();return}
+ const a=AEL[n];if(a){const c=a.cloneNode();c.volume=VOL;c.playbackRate=SPD;c.preservesPitch=false;c.play().catch(()=>{})}}catch(e){}}
 ['pointerdown','touchend','click','keydown'].forEach(t=>document.addEventListener(t,unlock,true));
 /* 左下角音量 */
 (function(){const w=document.createElement('div');w.className='vol';w.innerHTML=`<button id=vmute aria-label="靜音"></button><input id=vr type=range min=0 max=100 step=5 aria-label="音效音量"><span id=vp aria-hidden=true></span>`;document.body.appendChild(w);
@@ -302,15 +306,15 @@ function sfx(n){try{if(AC&&SFX[n]&&AC.state==='running'){const b=AC.createBuffer
  b.onclick=()=>{if(VOL>0){last=VOL;set(0,1)}else{set(last||.8,1);sfx('dry_fire')}}})();
 /* ---- 動態的動畫以每秒 24 格播放（時間長度不變，只是畫面像手繪動畫一格一格跳） ---- */
 const FPS=24,STEP=new Set(['nod','sway','adn','asn','rc','rcs','idle','ck','tr','ret','ent','hnd','sh','tilt','ln','izoom','ipush','iopen','ishake','gunup','gunrise','grab']);
-(function q(){const now=performance.now();try{document.getAnimations().forEach(a=>{if(!STEP.has(a.animationName))return;
- if(!a._q){a._q=now-(a.currentTime||0);a.pause()}a.currentTime=Math.floor((now-a._q)*FPS/1000)*1000/FPS})}catch(e){}requestAnimationFrame(q)})();
+(function q(){const now=performance.now();try{document.getAnimations().forEach(a=>{ if(!STEP.has(a.animationName)){if(a.playbackRate!==SPD)a.playbackRate=SPD;return}
+ if(!a._q){a._q=now-(a.currentTime||0)/SPD;a.pause()}a.currentTime=Math.floor((now-a._q)*FPS/1000)*1000/FPS*SPD})}catch(e){}requestAnimationFrame(q)})();
 /* ---- 道具：查看下一發 ---- */
 const pkHTML=()=>`<div class="itm pk ${s.sh[s.i]?'lv':'bk'}" role=status>下一發是 <b>${s.sh[s.i]?'實彈':'空彈'}</b></div>`;
 function itemUI(){if(!IT||s.i>=s.sh.length)return'';if(s.pk===s.i)return pkHTML();return s.it>0?`<button class=itm id=bi>查看下一發（剩 ${s.it} 次）</button>`:''}
 function peek(){if(!s.it||s.pk===s.i||s.i>=s.sh.length)return;s.it--;s.pk=s.i;const b=left(s);
  log('item',{level:s.n,shot_no:shot+1,live_left:b[0],blank_left:b[1],hp:s.hp,hc:s.hc,score_before:s.score,actor:'player',action:'peek',result:s.sh[s.i]?'live':'blank',score_after:s.score,item_left:s.it,dec_time:Math.min(C.T,(Date.now()-t0)/1000).toFixed(2)});/* 道具列的 dec_time＝這一發開始到按下道具的秒數 */
  const e=$('#bi');if(e)e.outerHTML=pkHTML()}
-function act(a,to){if(quitted)return;clearInterval(tm);sfx('loaded');const dt=Math.min(C.T,(Date.now()-t0)/1000);draw('瞄準中…',1,{aim:a==='s'?'self':'dev'});setTimeout(()=>fire(a,to,dt),1500)}
+function act(a,to){if(quitted)return;clearInterval(tm);sfx('loaded');const dt=Math.min(C.T,(Date.now()-t0)/1000);draw('瞄準中…',1,{aim:a==='s'?'self':'dev'});W(()=>fire(a,to,dt),1500)}
 function fire(a,to,dt){if(quitted)return;const pk=s.pk===s.i?(s.sh[s.i]?'live':'blank'):'',pre=a==='c'?face({aim:'dev'}):'',b=left(s),sb=s.score,hp=s.hp,hc=s.hc,ev=shoot(s,a),m=[];
  if(to)m.push('超時，自動射惡魔。');
  ev.forEach((e,j)=>{log('shot',{level:s.n,shot_no:++shot,live_left:b[0],blank_left:j?b[1]-1:b[1],hp,hc,score_before:j?ev[0].sc:sb,actor:e.actor,action:j?'retaliate':to?'timeout_computer':a==='s'?'self':'computer',result:e.x?'live':'blank',score_after:e.sc,dec_time:j?'':dt.toFixed(2),timeout:to?1:0,peeked:j?'':pk,item_left:j?'':s.it});
@@ -319,17 +323,17 @@ function fire(a,to,dt){if(quitted)return;const pk=s.pk===s.i?(s.sh[s.i]?'live':'
  /* 結果在開槍那一刻才揭曉：反擊前只顯示玩家這一發之後的狀態 */
  if(e1)fx.show={hp,l:b[0],b:b[1]-1};else if(fx.a==='selfl')fx.show={hp};
  draw(e1?m.slice(0,-1).concat('惡魔拿起了槍…').join('<br>'):full,1,fx);
- if(fx.show){const st=$('.stage');setTimeout(()=>{if($('.stage')!==st)return;const[l2,b2]=left(s);$('#vhp').innerHTML=hearts(s.hp,C.lv[s.n-1].hp);$('#vl').textContent=l2;$('#vb').textContent=b2;$('#msg').innerHTML=full},e1?(e1.x?3660:3750):60)}
+ if(fx.show){const st=$('.stage');W(()=>{if($('.stage')!==st)return;const[l2,b2]=left(s);$('#vhp').innerHTML=hearts(s.hp,C.lv[s.n-1].hp);$('#vl').textContent=l2;$('#vb').textContent=b2;$('#msg').innerHTML=full},e1?(e1.x?3660:3750):60)}
  const gl=(q0,x,y,z,c)=>{const e=$(q0),g=$('.gl'),wd=$('.world');if(!e||!g||!wd)return;const q=e.getBoundingClientRect(),W=wd.getBoundingClientRect(),d=Math.min(W.width,W.height)*z,R=Math.random,n=9+Math.floor(R()*5),P=[],Q=[];let a=R()*6.28;
   for(let k=0;k<n*2;k++){const o=k%2===0,r=o?58+R()*42:20+R()*22;a+=6.2832/(n*2)*(.55+R()*.9);P.push((Math.cos(a)*r).toFixed(1)+','+(Math.sin(a)*r).toFixed(1));Q.push((Math.cos(a)*r*.5).toFixed(1)+','+(Math.sin(a)*r*.5).toFixed(1))}
   g.innerHTML=`<svg viewBox="-100 -100 200 200"><defs><radialGradient id=fg><stop offset=0 stop-color=#fff /><stop offset=.4 stop-color=#fff3c4 /><stop offset=.75 stop-color=#ffb04a stop-opacity=.85 /><stop offset=1 stop-color=#ff7a1a stop-opacity=0 /></radialGradient><filter id=fb x=-20% y=-20% width=140% height=140%><feGaussianBlur stdDeviation=2.2 /></filter></defs><polygon points="${P.join(' ')}" fill=url(#fg) filter=url(#fb) /><polygon points="${Q.join(' ')}" fill=#fff opacity=.92 filter=url(#fb) /></svg>`;
   g.style.cssText=`left:${q.left+q.width*x}px;top:${q.top+q.height*y}px;width:${d}px;height:${d}px;rotate:${Math.floor(R()*360)}deg`;g.classList.add(c)};
- if(fx.a==='selfl')gl('.w3 img',.53,.93,1,'go');if(fx.a==='hitd')gl('.w2 img',.19,.46,.3,'gd');if(fx.a==='selfl')sfx('shut_player');/* 耳鳴：玩家中彈、黑畫面開始變亮時（死亡就不會變亮，不播） */if(r!=='dead'&&(fx.a==='selfl'||fx.r==='live')){const st=$('.stage');setTimeout(()=>{if($('.stage')===st){sfx('ears_ringing');sfx('heartbeat')}},(fx.r==='live'?3600:0)+1340)}if(fx.a==='hitd')sfx('shut_demon');if(fx.a==='clkd'||fx.a==='selfb')sfx('dry_fire');if(fx.r==='blank'){const st=$('.stage');setTimeout(()=>{if($('.stage')===st)sfx('dry_fire')},3600)}if(fx.r){const st=$('.stage');setTimeout(()=>{if($('.stage')===st)sfx('loaded')},2100)}if(fx.r==='live')setTimeout(()=>{sfx('shut_player');const o=$('.ov');if(o)o.classList.add('on');gl('.dhs .h2',.415,.58,1,'go')},3600);setTimeout(()=>r?end(r):draw(''),r==='dead'?(fx.r?4700:1000):fx.a==='hitd'?(fx.k?500:3100):fx.r==='live'?6100:fx.r?5100:fx.a==='selfl'?2500:1300)}
+ if(fx.a==='selfl')gl('.w3 img',.53,.93,1,'go');if(fx.a==='hitd')gl('.w2 img',.19,.46,.3,'gd');if(fx.a==='selfl')sfx('shut_player');/* 耳鳴：玩家中彈、黑畫面開始變亮時（死亡就不會變亮，不播） */if(r!=='dead'&&(fx.a==='selfl'||fx.r==='live')){const st=$('.stage');W(()=>{if($('.stage')===st){sfx('ears_ringing');sfx('heartbeat')}},(fx.r==='live'?3600:0)+1340)}if(fx.a==='hitd')sfx('shut_demon');if(fx.a==='clkd'||fx.a==='selfb')sfx('dry_fire');if(fx.r==='blank'){const st=$('.stage');W(()=>{if($('.stage')===st)sfx('dry_fire')},3600)}if(fx.r){const st=$('.stage');W(()=>{if($('.stage')===st)sfx('loaded')},2100)}if(fx.r==='live')W(()=>{sfx('shut_player');const o=$('.ov');if(o)o.classList.add('on');gl('.dhs .h2',.415,.58,1,'go')},3600);W(()=>r?end(r):draw(''),r==='dead'?(fx.r?4700:1000):fx.a==='hitd'?(fx.k?500:3100):fx.r==='live'?6100:fx.r?5100:fx.a==='selfl'?2500:1300)}
 function end(r){if(quitted)return;log('level_end',{level:s.n,end_reason:r,score_after:s.score,hp:s.hp,hc:s.hc});
  if(r==='dead')return over('dead');cleared++;if(s.n===3)return over('clear');
  const h=`<div class="fin clr"><div><h1>第 ${s.n} 關通過</h1><p>通關 +${C.bonus} 分，目前 ${s.score} 分。下一關生命會重設。</p></div></div>`,st=$('.stage');
  if(st)st.insertAdjacentHTML('beforeend',h);else app.innerHTML=h;/* 顯示 2 秒後自動淡出，進入下一關 */
- const n=s.n,sc=s.score;setTimeout(()=>{const f=$('.fin.clr');if(f)f.classList.add('out');setTimeout(()=>lvl(n+1,sc,1),500)},2000)}
+ const n=s.n,sc=s.score;W(()=>{const f=$('.fin.clr');if(f)f.classList.add('out');W(()=>lvl(n+1,sc,1),500)},2000)}
 /* 右上角「結束遊戲」：按第一次變成確認，3 秒內再按一次才結束 */
 function quit(){const b=$('#bq');if(!b||quitted)return;if(sessOver())return tmo();if(!b.classList.contains('cf')){b.classList.add('cf');b.textContent='再按一次確定結束';setTimeout(()=>{if(b.isConnected){b.classList.remove('cf');b.textContent='結束遊戲'}},3000);return}
  clearInterval(tm);log('level_end',{level:s.n,end_reason:'quit',score_after:s.score,hp:s.hp,hc:s.hc});over('quit');quitted=1;inGame=0}
