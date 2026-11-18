@@ -139,7 +139,7 @@ function loadCfg(){if(!C.url)return Promise.resolve();
  return fetch(C.url+'?t='+Date.now()).then(r=>r.json()).then(j=>{const o={src:{}};['low','high'].forEach(m=>{if(j[m]&&j[m].items==null)j[m].items=1});/* 舊的 config 分頁沒有 items 這一列時，預設每關 1 次 */['low','high'].forEach(m=>{const ok=valid(j[m]);o[m]=ok?j[m]:DEF[m];o.src[m]=ok?'sheet':'default'});CFG=o}).catch(()=>{})}
 function apply(m){const p=CFG[m];C.lv=[1,2,3].map(i=>({L:p['L'+i+'_live'],B:p['L'+i+'_blank'],hp:p['L'+i+'_hp'],hc:p['L'+i+'_hc']}));
  C.a=p.a;C.b=p.b;C.d=p.d;C.bonus=p.bonus;C.T=p.T;C.items=p.items;risk=m;params=CFG.src[m]+'|'+KEYS.map(k=>p[k]).join(',')+',items='+p.items}
-const TH={A:{0:.1,15:.9},B:{0:.2,5:.1,15:.3,20:.1,25:.1,35:.1,45:.1}};
+
 const $=q=>document.querySelector(q),app=$('#app');
 const ls={get:k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 let name=ls.get('bk_name')||'',IT=!!ls.get('bk_item'),itemMode='';/* IT：開始畫面的道具開關 */
@@ -157,7 +157,6 @@ function shoot(s,act){const ev=[],take=()=>s.sh[s.i++];const x=take();
  return ev}
 const state=s=>s.hp<=0?'dead':s.hc<=0?'clear':'';
 const fin=s=>{const r=state(s);if(r==='clear')s.score+=C.bonus;return r};
-const bot={A:()=>'c',B:s=>s.hp===2&&left(s)[1]>0?'s':'c'};
 /* ---- 紀錄：每發即時存本機並分批送出 ---- */
 let seq=0,gid='',busy=0,busy2=0;const all=ls.get('bk_all')||[];let out=ls.get('bk_out')||[],out2=ls.get('bk_out2')||[];
 function log(type,o){const r=Object.assign({ts:twTime(),gid,pid,name,risk,params,item_mode:itemMode,seq:++seq,ver:C.ver,src:'human',type,device:/Mobi|Android|iPhone/.test(navigator.userAgent)?'phone':'pc'},o);all.push(r);out.push(r);ls.set('bk_all',all);ls.set('bk_out',out);if(C.url2){out2.push(r);ls.set('bk_out2',out2)}}
@@ -319,13 +318,54 @@ function tmo(){if(quitted||!s)return;clearInterval(tm);log('level_end',{level:s.
 function over(r){if(quitted)return;inGame=0;const ti=r==='clear'?'全部通關':r==='timeout'?'試玩時間到':r==='quit'?'提前結束':'遊戲結束';
  log('game_end',{end_reason:r==='clear'?'clear_all':r==='timeout'?'timeout':r==='quit'?'quit_L'+s.n:'dead_L'+s.n,final_score:s.score,levels_cleared:cleared,total_time:Math.round((Date.now()-gt)/1000)});resend(gid);flush();
  app.innerHTML=`<div class="fin ${r==='dead'?'slow':''}"><div><h1>${ti}</h1><p>${sessOver()?(C.G/60)+' 分鐘試玩時間結束。':''}最終分數 ${s.score}，通過 ${cleared} 關。</p>${sessOver()?'<button class=main id=nx2>換下一位玩家</button>':''}<button ${sessOver()?'':'class=main '}id=ok>回到首頁</button></div></div>`;$('#ok').onclick=home;if($('#nx2'))$('#nx2').onclick=askName}
-/* ---- 模擬模式：網址加 ?sim=A 或 ?sim=B（可加 &n=20000）---- */
-function simPage(k){const n=+(/n=(\d+)/.exec(location.search)||[0,20000])[1],o={c:[0,0,0],tot:0,all:0,p1:{}};
- for(let g=0;g<n;g++){let sc=0,lv=0;for(let m=1;m<=3;m++){const x=newLevel(m,sc);while(!state(x))shoot(x,bot[k](x));const r=fin(x);sc=x.score;if(m===1)o.p1[sc]=(o.p1[sc]||0)+1;if(r!=='clear')break;o.c[m-1]++;lv++}o.tot+=sc;if(lv===3)o.all++}
- const th=TH[k],xs=[...new Set(Object.keys(o.p1).concat(Object.keys(th)))].sort((a,b)=>a-b);
- app.innerHTML=`<h1>模擬：策略 ${k}</h1><p>${n} 局，資料來源為模擬，不會上傳。</p><p>第一關通關率 ${(o.c[0]/n).toFixed(3)}，連過兩關 ${(o.c[1]/n).toFixed(3)}，整局通關 ${(o.all/n).toFixed(3)}，平均總分 ${(o.tot/n).toFixed(2)}</p><table><tr><th>第一關得分</th><th>模擬</th><th>理論</th></tr>${xs.map(x=>`<tr><td>${x}</td><td>${((o.p1[x]||0)/n).toFixed(3)}</td><td>${(th[x]||0).toFixed(3)}</td></tr>`).join('')}</table>`}
+/* ---- 模擬模式：網址加 ?sim 打開。用電腦玩家模擬很多局，顯示統計，並可下載跟真實資料同格式的紀錄 CSV ---- */
+const SIMT={AIM:1.5,ENT:3.1,HIT:3.1,KILL:.5,PASS:2.5,RB:5.1,RL:6.1,RD:4.7,SB:1.3,SL:2.5,SD:1};
+const Hb=p=>p<=0||p>=1?0:-(p*Math.log2(p)+(1-p)*Math.log2(1-p));
+const thinkT=p=>{const m=1+4*Hb(p);let t=0;for(let i=0;i<4;i++)t-=m/4*Math.log(1-Math.random());return t};/* 思考時間模型：平均 1+4H(p) 秒 */
+const SBOT={A:()=>'c',B:x=>x.hp>=2&&left(x)[1]>0?'s':'c',R:x=>{const[l,b]=left(x),p=l/(l+b);return p<.5?'s':p>.5?'c':(Math.random()<.5?'s':'c')}};
+function simGame(o,P,gno,t0){/* 回傳這一局的事件列（跟真實紀錄同欄位）與結果 */
+ const rows=[],gid=P.pid+'-'+gno,base={gid,pid:P.pid,name:P.name,ver:C.ver,src:'sim',device:'pc',risk:o.mode,params:'sim|'+o.bot+'|'+KEYS.map(k=>CFG[o.mode][k]).join(',')+',items='+C.items,item_mode:o.items?'on:'+C.items:'off'};
+ let sq=0,t=t0;const tw=ms=>new Date(ms+288e5).toISOString().replace('T',' ').slice(0,19);
+ const L=(type,x)=>rows.push(Object.assign({ts:tw(t),seq:++sq,type},base,x));
+ L('game_start',{});let sc=0,cl=0,dead=0,shotN;
+ for(let n=1;n<=3;n++){const x=newLevel(n,sc);let it=o.items?C.items:0;shotN=0;let b=left(x);L('level_start',{level:n,live_left:b[0],blank_left:b[1],hp:x.hp,hc:x.hc,score_after:sc});t+=SIMT.ENT*1000;
+  let r='';
+  while(!r&&x.i<x.sh.length){b=left(x);const p=b[0]/(b[0]+b[1]);let d=thinkT(p),pk='',a=SBOT[o.bot](x),to=0;
+   if(it>0&&Math.random()<Hb(p)*.7){const dp=d*.4;t+=dp*1000;it--;const seen=x.sh[x.i]?'live':'blank';
+    L('item',{level:n,shot_no:shotN+1,live_left:b[0],blank_left:b[1],hp:x.hp,hc:x.hc,score_before:x.score,actor:'player',action:'peek',result:seen,score_after:x.score,item_left:it,dec_time:dp.toFixed(2)});
+    pk=seen;a=seen==='live'?'c':'s';d=dp+thinkT(seen==='live'?1:0)*.6;t+=(d-dp)*1000}else t+=Math.min(d,C.T)*1000;
+   if(d>=C.T){d=C.T;to=1;a='c'}
+   const sb=x.score,hp=x.hp,hc=x.hc,ev=shoot(x,a);
+   ev.forEach((e,j)=>{L('shot',{level:n,shot_no:++shotN,live_left:b[0],blank_left:j?b[1]-1:b[1],hp,hc,score_before:j?ev[0].sc:sb,actor:e.actor,action:j?'retaliate':to?'timeout_computer':a==='s'?'self':'computer',result:e.x?'live':'blank',score_after:e.sc,dec_time:j?'':d.toFixed(2),timeout:to,peeked:j?'':pk,item_left:j?'':it})});
+   t+=SIMT.AIM*1000;r=fin(x);const e0=ev[0],e1=ev[1];
+   const k=e0.tgt==='self'?(e0.x?(r==='dead'?'SD':'SL'):'SB'):(e0.x?(r==='clear'?'KILL':'HIT'):(e1&&e1.x?(r==='dead'?'RD':'RL'):'RB'));t+=SIMT[k]*1000}
+  if(!r)r='out';sc=x.score;L('level_end',{level:n,end_reason:r,score_after:x.score,hp:x.hp,hc:x.hc});
+  if(r!=='clear'){dead=n;break}cl++;if(n<3)t+=SIMT.PASS*1000}
+ L('game_end',{end_reason:dead?'dead_L'+dead:'clear_all',final_score:sc,levels_cleared:cl,total_time:Math.round((t-t0)/1000)});
+ return{rows,sc,cl,t}}
+function simPage(){
+ app.innerHTML=`<h1>模擬模式</h1><p>用電腦玩家模擬很多局。統計用「局數」那一欄；下載的紀錄 CSV 跟試算表 events 分頁欄位完全相同（src 欄是 sim），可以直接貼進分析用的 Excel 測試。參數來自後台 config（讀不到就用內建預設）。</p>
+ <label>模式 <select id=sm><option value=low>低波動</option><option value=high>高波動</option></select></label>
+ <label>策略 <select id=sb><option value=A>A：一律射惡魔（Stage 2 理論的假設）</option><option value=B>B：生命 2 以上且還有空彈就射自己</option><option value=R>R：實彈機率 &lt; 一半射自己，否則射惡魔</option></select></label>
+ <label><input type=checkbox id=si> 開啟道具（越不確定越可能用，看完一定選對）</label>
+ <label>統計局數 <input id=sn type=number value=20000 min=100 max=200000></label>
+ <label>紀錄：玩家數 <input id=sp type=number value=2 min=1 max=50>　每人局數 <input id=sg type=number value=5 min=1 max=200></label>
+ <button class=main id=sgo>開始模擬</button><div id=sres></div>`;
+ cfgP=loadCfg();
+ $('#sgo').onclick=async()=>{await Promise.race([cfgP,new Promise(r=>setTimeout(r,3000))]);const o={mode:$('#sm').value,bot:$('#sb').value,items:$('#si').checked};apply(o.mode);
+  const N=Math.min(200000,Math.max(100,+$('#sn').value||20000)),st={c:[0,0,0],sum:0,sq:0,pm:{},tt:0};
+  for(let g=0;g<N;g++){const r=simGame(o,{pid:'S',name:'s'},g+1,0);const s2=r.sc;st.sum+=s2;st.sq+=s2*s2;st.pm[s2]=(st.pm[s2]||0)+1;st.tt+=r.t/1000;for(let k=0;k<r.cl;k++)st.c[k]++}
+  const m=st.sum/N,sd=Math.sqrt(st.sq/N-m*m),f=x=>(x*100).toFixed(1)+'%';
+  const np=Math.max(1,+$('#sp').value||2),ng=Math.max(1,+$('#sg').value||5),rows=[];let t=Date.now();
+  for(let pi=1;pi<=np;pi++){const P={pid:'SIM'+String(pi).padStart(2,'0'),name:'模擬'+pi};for(let g=1;g<=ng;g++){const r=simGame(o,P,g,t);rows.push(...r.rows);t=r.t+8000}}
+  $('#sres').innerHTML=`<h2>結果（${N} 局）</h2><p>通關率：第 1 關 ${f(st.c[0]/N)}；走到第 2 關的人通過 ${f(st.c[1]/Math.max(1,st.c[0]))}；走到第 3 關的人通過 ${f(st.c[2]/Math.max(1,st.c[1]))}；三關全過 ${f(st.c[2]/N)}</p><p>總分平均 ${m.toFixed(2)}，標準差 ${sd.toFixed(2)}；每局平均 ${(st.tt/N).toFixed(1)} 秒</p>
+   <table><tr><th>總分</th><th>比例</th></tr>${Object.keys(st.pm).map(Number).sort((a,b)=>a-b).map(x=>`<tr><td>${x}</td><td>${f(st.pm[x]/N)}</td></tr>`).join('')}</table>
+   <p>紀錄：${np} 位模擬玩家 × ${ng} 局，共 ${rows.length} 筆。</p><button class=main id=sdl>下載模擬紀錄 CSV</button>`;
+  $('#sdl').onclick=()=>{const q=v=>{v=v==null?'':String(v);return/[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+   const head=['key'].concat(COLS),txt=[head.join(',')].concat(rows.map(r=>[r.gid+'|'+r.seq+'|'+r.type].concat(COLS.map(c=>q(r[c]))).join(','))).join('\n'),a=document.createElement('a');
+   a.href=URL.createObjectURL(new Blob(['﻿'+txt],{type:'text/csv'}));a.download=`sim_${o.mode}_${o.bot}_${np}x${ng}.csv`;a.click()}}}
 function fit(){const w=innerWidth,h=innerHeight,ar=w/h,c=ar>=1.55&&ar<16/9-.01,R=document.documentElement,W=h*16/9;
  R.classList.toggle('crop',c);R.style.setProperty('--cx',c?((W-w)/2/W*100).toFixed(3)+'%':'0%');R.style.setProperty('--cxi',c?((W-w)/W*100).toFixed(3)+'%':'0%');R.style.setProperty('--vc',c?(w/2/W*100).toFixed(3)+'%':'50%');R.style.setProperty('--wx',c?(-(W-w)/2).toFixed(1)+'px':'0px')}
 addEventListener('resize',fit);fit();
-const sm=/sim=([AB])/.exec(location.search);sm?simPage(sm[1]):home();
+/[?&]sim\b/.test(location.search)?simPage():home();
 </script></body></html>
