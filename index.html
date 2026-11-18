@@ -75,7 +75,7 @@ table{border-collapse:collapse;width:100%;font-size:14px}td,th{border-bottom:1px
 body.portal,body.portal2{background:#000}.iw.quick{animation:ifo .5s both}body.qin .stage{animation:ifade .7s both}
 /* 開門轉場時只留背景、桌子、惡魔；轉場結束後其他東西才浮現，槍從下面舉上來 */
 body.portal .top,body.portal .bar,body.portal #msg,body.portal .btns,body.portal .itm,body.portal .tb .inf,body.portal .tb .n,body.portal .tb .hp,body.portal .blood,body.portal .gw{opacity:0!important}
-body.arrive .top,body.arrive .bar,body.arrive #msg,body.arrive .btns,body.arrive .itm,body.arrive .tb .inf,body.arrive .tb .n,body.arrive .tb .hp,body.arrive .blood{animation:ifade .6s both}body.arrive .gw{animation:gunup .8s ease-out both}@keyframes ifade{from{opacity:0}}@keyframes gunup{from{transform:translateY(60%)}}body.portal .stage{transform:scale(.75)}body.portal2 .stage{transform:none;transition:transform .9s ease-in}
+@keyframes ifade{from{opacity:0}}@keyframes gunup{from{transform:translateY(60%)}}body.portal .stage{transform:scale(.75)}body.portal2 .stage{transform:none;transition:transform .9s ease-in}
 .stx{position:absolute;inset:0;font-size:1.35cqw;line-height:1;color:#141414;font-weight:700;pointer-events:none;transition:opacity .25s}.sl{position:absolute;white-space:nowrap;transform-origin:0 50%;translate:0 -50%}
 .stx.dim{opacity:.55}
 .itog{position:absolute;left:48%;top:55%;translate:-50% -50%;width:auto;margin:0;padding:.6cqw 1.2cqw;font-size:1.05cqw;display:flex;gap:.8cqw;align-items:center;background:#262626;color:#ddd;border:.2cqw solid #111;border-radius:.6cqw;box-shadow:0 .3cqw 0 #0008}
@@ -163,6 +163,12 @@ function send(u,get,done,beacon,isBusy,setBusy){const q=get();if(!u||!q.length)r
 function flush(beacon){
  send(C.url,()=>out,n=>{out=out.slice(n);ls.set('bk_out',out)},beacon,()=>busy,v=>busy=v);
  send(C.url2,()=>out2,n=>{out2=out2.slice(n);ls.set('bk_out2',out2)},beacon,()=>busy2,v=>busy2=v)}
+/* 補送校驗：無法得知試算表那邊有沒有寫入成功，所以在每關開始、每局結束、下次打開時，把這一局的紀錄整批再送一次；
+   試算表用 key（局代號|序號|事件類型）去重，重複的不會多寫，之前漏掉的就會補上 */
+function resend(g){if(!g)return;const k=r=>r.gid+'|'+r.seq+'|'+r.type,rows=all.filter(r=>r.gid===g);
+ const add=(q,key)=>{const have=new Set(q.map(k));rows.forEach(r=>{if(!have.has(k(r)))q.push(r)});ls.set(key,q)};
+ if(C.url)add(out,'bk_out');if(C.url2)add(out2,'bk_out2')}
+setTimeout(()=>{const g=[...new Set(all.slice(-400).map(r=>r.gid))].slice(-3);g.forEach(resend)},1500);/* 打開時補送最近 3 局 */
 setInterval(()=>flush(),3000);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)flush(true)});addEventListener('pagehide',()=>flush(true));
 function csv(){const q=v=>{v=v==null?'':String(v);return/[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
@@ -190,7 +196,11 @@ const sDesc=m=>{const p=CFG[m];return[`生命 ${p.L1_hp}／${p.L2_hp}／${p.L3_h
 function signText(){['low','high'].forEach(m=>{const e=$('#t'+m);if(!e)return;const g=SG[m],t=sDesc(m),n=t.length;
  e.innerHTML=t.map((x,k)=>{const f=(k+.5)/n,ly=g.L[0]+(g.L[1]-g.L[0])*f,ry=g.R[0]+(g.R[1]-g.R[0])*f,a=Math.atan2(ry-ly,g.x1-g.x0)*180/Math.PI;
   return`<div class=sl style="left:${(g.x0/19.2).toFixed(2)}%;top:${(ly/10.8).toFixed(2)}%;transform:skewY(${a.toFixed(1)}deg)">${x}</div>`}).join('')})}
-function closeIntro(){const L=$('#ilayer');if(!L)return;L.remove();const B=document.body.classList;if(B.contains('portal')){B.add('arrive');setTimeout(()=>B.remove('arrive'),1300)}B.remove('portal','portal2')}
+/* 轉場結束：只對「當下畫面上」的介面做一次淡入、槍舉起來；之後畫面重繪不會再播一次 */
+function arrive(){const st=$('.stage');if(!st)return;const fps=24,ease=t=>1-Math.pow(1-t,3);
+ st.querySelectorAll('.top,#msg,.btns,.itm,.tb .inf,.tb .n,.tb .hp,.blood,.quit').forEach(e=>{try{e.animate([{opacity:0},{opacity:1}],{duration:600,fill:'backwards'})}catch(x){}});
+ const g=st.querySelector('.gw');if(g){const n=Math.round(.8*fps),k=[];for(let i=0;i<=n;i++)k.push({transform:`translateY(${(60*(1-ease(i/n))).toFixed(2)}%)`,easing:'steps(1,end)'});try{g.animate(k,{duration:800})}catch(x){}}}
+function closeIntro(){const L=$('#ilayer');if(!L)return;L.remove();const B=document.body.classList;const was=B.contains('portal');B.remove('portal','portal2');if(was)arrive()}
 function intro(){pick='';app.innerHTML='';let L=$('#ilayer');if(!L){L=document.createElement('div');L.id='ilayer';document.body.appendChild(L)}L.innerHTML=`<div class=intro><div class=iw><div class=cam>
  <img src="assets/intro_bg.png" alt=""><svg class=iext viewBox="0 0 700 1080" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id=iwg x1=0 y1=0 x2=0 y2=1><stop offset=0 stop-color=#353535 /><stop offset=1 stop-color=#4b4b4b /></linearGradient></defs><rect width=700 height=1080 fill=url(#iwg) /><polygon points="0,0 0,76 700,-400 700,0" fill=#363636 /><polygon points="0,1080 0,989 700,1969" fill=#4c4c4c /><polyline points="0,76 700,-400" stroke=#000 stroke-width=7 fill=none /><polyline points="0,989 700,1969" stroke=#000 stroke-width=7 fill=none /></svg><img class=leaf src="assets/intro_door.png" alt="">
  <img class="sg fo" id=slow src="assets/intro_low.png" alt=""><img class="sgl fo" id=llow src="assets/intro_low_light.png" alt=""><img class="sg fo" id=shigh src="assets/intro_high.png" alt=""><img class="sgl fo" id=lhigh src="assets/intro_high_light.png" alt="">
@@ -224,7 +234,7 @@ function showHome(){closeIntro();const d=m=>{const p=CFG[m];return`我的生命 
 async function start(m,ent){if(sessOver())return home();if(!sess||sess.pid!==pid){sess={pid,t0:Date.now()};ls.set('bk_sess',sess)}inGame=1;if($('#golow')){$('#golow').disabled=$('#gohigh').disabled=true;$('#hs').textContent='載入設定中…'}
  await Promise.race([cfgP,new Promise(r=>setTimeout(r,3000))]);apply(m);
  gno++;ls.set('bk_n',gno);gid=pid+'-'+gno;seq=0;itemMode=IT?'on:'+C.items:'off';gt=Date.now();cleared=0;s=null;quitted=0;log('game_start',{});lvl(1,0,ent)}
-function lvl(n,sc,ent){if(quitted)return;hitAt=s&&s.hp===1&&C.lv[s.n-1].hp>1?Date.now()-2400:-1e9;s=newLevel(n,sc);s.it=IT?C.items:0;s.pk=-1;shot=0;const b=left(s);log('level_start',{level:n,live_left:b[0],blank_left:b[1],hp:s.hp,hc:s.hc,score_after:sc});if(ent){draw('',1,{ent:1});const st=$('.stage');setTimeout(()=>{if($('.stage')===st)draw('')},3100)}else draw('')}
+function lvl(n,sc,ent){if(quitted)return;hitAt=s&&s.hp===1&&C.lv[s.n-1].hp>1?Date.now()-2400:-1e9;s=newLevel(n,sc);s.it=IT?C.items:0;s.pk=-1;shot=0;if(n>1)resend(gid);const b=left(s);log('level_start',{level:n,live_left:b[0],blank_left:b[1],hp:s.hp,hc:s.hc,score_after:sc});if(ent){draw('',1,{ent:1});const st=$('.stage');setTimeout(()=>{if($('.stage')===st)draw('')},3100)}else draw('')}
 const cls=f=>{const ps=f.aim==='self'||/^self/.test(f.a||''),pf=!ps&&(f.aim||f.a);return`${f.aim?'aim-'+f.aim:''} ${f.a?'a-'+f.a:''} ${f.r?'r-'+f.r:''} ${ps?'ps':pf?'pf':''} ${f.k?'kill':''} ${f.ent?'a-ent':''}`};
 let hitAt=-1e9;
 const im=(n,c)=>`<img class="dh ${c||''}" src="assets/${n}.png" alt="">`;
@@ -302,7 +312,7 @@ function quit(){const b=$('#bq');if(!b||quitted)return;if(sessOver())return tmo(
  clearInterval(tm);log('level_end',{level:s.n,end_reason:'quit',score_after:s.score,hp:s.hp,hc:s.hc});over('quit');quitted=1;inGame=0}
 function tmo(){if(quitted||!s)return;clearInterval(tm);log('level_end',{level:s.n,end_reason:'timeout',score_after:s.score,hp:s.hp,hc:s.hc});over('timeout');quitted=1}
 function over(r){if(quitted)return;inGame=0;const ti=r==='clear'?'全部通關':r==='timeout'?'試玩時間到':r==='quit'?'提前結束':'遊戲結束';
- log('game_end',{end_reason:r==='clear'?'clear_all':r==='timeout'?'timeout':r==='quit'?'quit_L'+s.n:'dead_L'+s.n,final_score:s.score,levels_cleared:cleared,total_time:Math.round((Date.now()-gt)/1000)});flush();
+ log('game_end',{end_reason:r==='clear'?'clear_all':r==='timeout'?'timeout':r==='quit'?'quit_L'+s.n:'dead_L'+s.n,final_score:s.score,levels_cleared:cleared,total_time:Math.round((Date.now()-gt)/1000)});resend(gid);flush();
  app.innerHTML=`<div class="fin ${r==='dead'?'slow':''}"><div><h1>${ti}</h1><p>${sessOver()?(C.G/60)+' 分鐘試玩時間結束。':''}最終分數 ${s.score}，通過 ${cleared} 關。</p>${sessOver()?'<button class=main id=nx2>換下一位玩家</button>':''}<button ${sessOver()?'':'class=main '}id=ok>回到首頁</button></div></div>`;$('#ok').onclick=home;if($('#nx2'))$('#nx2').onclick=askName}
 /* ---- 模擬模式：網址加 ?sim=A 或 ?sim=B（可加 &n=20000）---- */
 function simPage(k){const n=+(/n=(\d+)/.exec(location.search)||[0,20000])[1],o={c:[0,0,0],tot:0,all:0,p1:{}};
