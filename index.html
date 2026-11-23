@@ -14,14 +14,22 @@ table{border-collapse:collapse;width:100%;font-size:14px}td,th{border-bottom:1px
 .stage{position:fixed;inset:0;z-index:5;overflow:hidden;background:#000;display:grid;place-items:center}
 /* 橫式（電腦）版面 16:9；直式（手機）版面 9:19。數值都是相對於 .world 的百分比 */
 .world{position:relative;overflow:hidden;width:min(100vw,177.78vh);width:min(100vw,177.78dvh);aspect-ratio:16/9;
- --bg:url(assets/bg_pc.png);--dw:41.67%;--dt:3.7%;--oy:32.5%;--tw:57.3%;--tt:21.3%;--g1h:78%;--g1x:-2%;--g1b:-5%;--g2h:80%;--g2x:16.3%;--g2b:-.3%;--g3h:60%;--gy:-41%;--mw:20%;--mb:13%;--is:3.1cqw}
+ --bg:url(assets/bg_pc.png);--dw:41.67%;--dt:-.8%;--oy:32.5%;--tw:57.3%;--tt:21.3%;--g1h:78%;--g1x:-2%;--g1b:-5%;--g2h:80%;--g2x:16.3%;--g2b:-.3%;--g3h:60%;--gy:-41%;--mw:19%;--mb:34%;--is:3.1cqw}
 @media(max-aspect-ratio:1/1){.world{width:min(100vw,47.37vh);width:min(100vw,47.37dvh);aspect-ratio:9/19;
  --bg:url(assets/bg_phone.png);--dw:120.4%;--dt:16.27%;--oy:25%;--tw:112%;--tt:39.43%;--g1h:56%;--g1x:15%;--g1b:-8.4%;--g2h:60%;--g2x:39%;--g2b:0%;--g3h:42%;--gy:-38%;--mw:46%;--mb:9%;--is:3.7cqw}}
 .scene{position:absolute;inset:0;perspective:700px;background:#8c8c8c var(--bg) center/100% 100% no-repeat}
 .dvs{position:absolute;left:50%;top:var(--dt);width:var(--dw);aspect-ratio:1;translate:-50% 0}.dvs img,.dvs svg{position:absolute;inset:0;width:100%;height:100%}.dv{position:absolute;inset:0;-webkit-mask-image:linear-gradient(#000 84%,transparent 96%);mask-image:linear-gradient(#000 84%,transparent 96%)}
 .dh{transform-origin:49% 51%;animation:nod 5s ease-in-out infinite}@keyframes nod{0%,100%{rotate:-1.2deg}50%{rotate:1.2deg}}
 .tb{position:absolute;left:50%;top:var(--tt);width:var(--tw);aspect-ratio:1;translate:-50% 0;z-index:1;container-type:inline-size;color:#111}
-.tb img{position:absolute;inset:0;width:100%;height:100%}
+.tb img{position:absolute;inset:0;width:100%;height:100%}.tpc{display:none}
+.cat{position:absolute;inset:0;pointer-events:none;display:none}.cat img{position:absolute;inset:0;width:100%;height:100%;opacity:0}
+.cat.fd img{transition:opacity .6s}.cat img.cfo{animation:cfo .6s linear both}.cat img.cfi{animation:cfi .6s linear both}@keyframes cfo{from{opacity:1}to{opacity:0}}@keyframes cfi{from{opacity:0}to{opacity:1}}.cat[data-s="2"] .c2_2{animation:c22 1s steps(1) var(--cd,0ms) infinite}@keyframes c22{0%{opacity:0}50%{opacity:1}}/* 貓 2 嚇到時：每 0.5 秒在 2 和 2-2 之間切換 */
+.cat[data-s="1"] .c1,.cat[data-s="2"] .c2,.cat[data-s="3"] .c3{opacity:1}
+/* 電腦版：新桌子是整張 16:9 跟背景疊在一起；桌上的字和愛心位置都是相對整個畫面 */
+@media(min-aspect-ratio:1/1){.cat{display:block}.tb{left:0;top:0;width:100%;aspect-ratio:16/9;translate:none}.tb .tpc{display:block}.tb .tph{display:none}
+ .tb .n{top:71.8%;font-size:3.5cqw;transform:skewX(27deg)}.tb #vb{left:69.8%}.tb #vl{left:78.3%;transform:skewX(31deg)}
+ .tb .inf{left:27.3%;top:68.9%;width:20%;font-size:2.35cqw}
+ .tb .hpd{left:50%;top:57.6%;height:2.3cqw}.tb .hpm{left:11.5%;top:87%;height:3.4cqw}}
 .n{position:absolute;top:52.9%;translate:-50% -50%;transform:skewX(14deg);font-weight:800;font-size:5.6cqw;line-height:1;font-variant-numeric:tabular-nums}
 #vb{left:71.2%}#vl{left:80.6%;color:#c0392b}.hp{position:absolute;display:flex;gap:1.2cqw;translate:-50% -50%}.tb .hp img{position:static;width:auto;height:100%}.hp .lost{opacity:.2;filter:grayscale(1)}.hpd{left:50%;top:41.6%;height:3.6cqw}.hpm{left:12.5%;top:64%;height:6.2cqw;translate:0 -50%}
 .inf{position:absolute;left:25.5%;top:51%;width:24%;translate:-50% -50%;display:flex;flex-direction:column;align-items:center;font-size:3.5cqw;font-weight:800;line-height:1.45;white-space:nowrap;text-align:center}.inf i{font-style:normal;color:#c0392b}
@@ -84,18 +92,20 @@ body.portal .top,body.portal .bar,body.portal #msg,body.portal .btns,body.portal
 .imeta button{width:auto;margin:0;padding:.35cqw .9cqw;font-size:.95cqw}
 .ihint{position:absolute;left:0;right:0;bottom:3%;text-align:center;font-size:1.3cqw;color:#ddd;text-shadow:0 .2cqw .5cqw #000;pointer-events:none}
 .lb{position:absolute;left:36.6%;top:12.6%;width:23.4%;height:26.5%;box-sizing:border-box;padding:.7cqw .9cqw;background:rgba(18,18,18,.62);border:.22cqw solid #0c0c0c;border-radius:.4cqw;box-shadow:0 .3cqw .9cqw rgba(0,0,0,.45);font-size:1.02cqw;color:#e6e6e6;overflow:hidden;z-index:3}
-.lbh{display:flex;justify-content:space-between;align-items:center;margin-bottom:.45cqw;font-size:1.15cqw}
+.lbh{display:flex;justify-content:space-between;align-items:center;margin-bottom:.45cqw;font-size:1.15cqw}.lbh2{margin-top:-.25cqw}
 .lbh button{width:auto;margin:0 0 0 .3cqw;padding:.12cqw .5cqw;font-size:.85cqw;background:transparent;color:#aaa;border:.1cqw solid #555;border-radius:.3cqw}
 .lbh button.on{color:#141414;background:#e9e2b4;border-color:#e9e2b4}
 .lbl{list-style:none;margin:0;padding:0}
 .lbl li,.lbme{display:flex;gap:.6cqw;align-items:baseline;line-height:1.55;margin:0}
 .lbl i{font-style:normal;width:1.6cqw;text-align:right;color:#999}
 .lbl span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.lbl b{font-variant-numeric:tabular-nums}
+.lbl b{font-variant-numeric:tabular-nums;min-width:2.2em;text-align:right}
+.lbl em{font-style:normal;font-size:.8em;color:#888;border:.08cqw solid #555;border-radius:.25cqw;padding:0 .25cqw;line-height:1.3}
+.hb .lbl em{border-width:1px;border-radius:3px;padding:0 3px}
 .lbl .me,.lbme{color:#ffe98a}.lbme{border-top:.08cqw dashed #555;margin-top:.2cqw}
 .lbl li:first-child b,.lbl li:first-child span{color:#fff}
 .lbe{margin:.6cqw 0;color:#999}
-.hb{display:grid;grid-template-columns:1fr 1fr;gap:16px}.hb h2{font-size:1rem;margin:.8em 0 .3em}.hb .lbl i{width:2em}.hb .lbl{font-size:.95rem}
+.hb{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px}.hb h2{font-size:1rem;margin:.8em 0 .3em}.hb .lbl i{width:2em}.hb .lbl{font-size:.95rem}
 .ihint.warn{color:#ffb3a8;animation:fin .3s}
 .ready .leaf{animation:dglow 1.6s ease-in-out infinite}@keyframes dglow{50%{filter:brightness(1.3) drop-shadow(0 0 1cqw #ffd27a)}}
 .shake .leaf{animation:ishake .35s}@keyframes ishake{25%{translate:-.4% 0}75%{translate:.4% 0}}
@@ -207,18 +217,21 @@ function askName(){closeIntro();const chg=!!name;app.innerHTML=`<h1>惡魔輪盤
   name=v;ls.set('bk_name',v);home()};$('#nok').onclick=go;if(chg)$('#nno').onclick=home;$('#nm').onkeydown=e=>{if(e.key==='Enter')go()};$('#nm').focus()}
 function home(){if(!name)return askName();app.onclick=null;clearInterval(tm);const wide=innerWidth>innerHeight;wide?intro():showHome();cfgP=loadCfg().then(()=>{if($('#golow'))showHome();if($('.intro'))signText()});
  const rb=()=>loadBoard().then(()=>drawBoard());rb();setTimeout(rb,4000)/* 剛打完的那局可能還在上傳，晚一點再抓一次 */}
-/* ---- 排行榜：只讀試算表目前的 events 分頁（每位玩家各模式取最高分）；加上這台裝置剛打完、可能還沒寫進試算表的成績 ---- */
-let BD=ls.get('bk_board')||null,lbm='low';
-function loadBoard(){if(!C.url)return Promise.resolve();return fetch(C.url+'?board=1&t='+Date.now()).then(r=>r.json()).then(j=>{if(j&&Array.isArray(j.low)){BD=j;ls.set('bk_board',j)}}).catch(()=>{})}
-function mine(sc){const a=ls.get('bk_mine')||[];a.push({pid,name,risk,score:sc,ts:twTime()});ls.set('bk_mine',a.slice(-300))}
+/* ---- 排行榜：只讀試算表目前的 events 分頁；分「低／高波動 × 無／有道具」四榜，每位玩家在每一榜取最高分；加上這台裝置剛打完、可能還沒寫進試算表的成績 ---- */
+let BD=ls.get('bk_board')||null,lbr='low',lbi=IT?'on':'off';if(BD&&!Array.isArray(BD.low_off))BD=null;
+const itk=v=>/^on:[1-9]/.test(String(v||''))?'on':'off',LBN={off:'無道具',on:'有道具',low:'低波動',high:'高波動'};
+function loadBoard(){if(!C.url)return Promise.resolve();return fetch(C.url+'?board=1&t='+Date.now()).then(r=>r.json()).then(j=>{if(j&&Array.isArray(j.low_off)){BD=j;ls.set('bk_board',j)}}).catch(()=>{})}
+function mine(sc){const a=ls.get('bk_mine')||[];a.push({pid,name,risk,item:itk(itemMode),score:sc,ts:twTime()});ls.set('bk_mine',a.slice(-300))}
 function boardList(m){const since=BD&&BD.since||'',a=(BD&&BD[m]||[]).map(x=>Object.assign({},x));
- (ls.get('bk_mine')||[]).filter(x=>x.risk===m&&x.ts>=since).forEach(x=>{const o=a.find(y=>y.pid===x.pid);if(!o)a.push({pid:x.pid,name:x.name,score:x.score});else if(x.score>o.score){o.score=x.score;o.name=x.name}});
+ (ls.get('bk_mine')||[]).filter(x=>x.risk+'_'+x.item===m&&x.ts>=since).forEach(x=>{const o=a.find(y=>y.pid===x.pid);if(!o)a.push({pid:x.pid,name:x.name,risk:x.risk,score:x.score});else if(x.score>o.score){o.score=x.score;o.name=x.name;o.risk=x.risk}});
  a.sort((p,q)=>q.score-p.score);a.forEach((x,i)=>{x.rank=i&&x.score===a[i-1].score?a[i-1].rank:i+1});return a}
 function boardHTML(m,n){const a=boardList(m),me=a.find(x=>x.pid===pid),top=a.slice(0,n);
  return(top.length?`<ol class=lbl>${top.map(x=>`<li class="${x.pid===pid?'me':''}"><i>${x.rank}</i><span>${esc(x.name)}</span><b>${x.score}</b></li>`).join('')}</ol>`:'<p class=lbe>還沒有紀錄</p>')+(me&&me.rank>n?`<p class="lbl me lbme"><i>${me.rank}</i><span>${esc(me.name)}（你）</span><b>${me.score}</b></p>`:'')}
-function drawBoard(m){if(m)lbm=m;const el=$('#lb');if(el){el.innerHTML=`<div class=lbh><b>排行榜</b><span>${['low','high'].map(k=>`<button data-m=${k} class="${lbm===k?'on':''}" aria-pressed=${lbm===k}>${k==='low'?'低波動':'高波動'}</button>`).join('')}</span></div>${boardHTML(lbm,5)}`;
-  el.querySelectorAll('button').forEach(b=>b.onclick=e=>{e.stopPropagation();drawBoard(b.dataset.m)})}
- const hb=$('#hb');if(hb)hb.innerHTML=['low','high'].map(k=>`<div><h2>排行榜・${k==='low'?'低波動':'高波動'}</h2>${boardHTML(k,10)}</div>`).join('')}
+function drawBoard(r,it){if(r)lbr=r;if(it)lbi=it;const el=$('#lb');
+ if(el){const tb=(k,cur,f)=>`<button data-${f}=${k} class="${cur===k?'on':''}" aria-pressed=${cur===k}>${LBN[k]}</button>`;
+  el.innerHTML=`<div class=lbh><b>排行榜</b><span>${['low','high'].map(k=>tb(k,lbr,'r')).join('')}</span></div><div class="lbh lbh2"><span></span><span>${['off','on'].map(k=>tb(k,lbi,'i')).join('')}</span></div>${boardHTML(lbr+'_'+lbi,5)}`;
+  el.querySelectorAll('button').forEach(b=>b.onclick=e=>{e.stopPropagation();drawBoard(b.dataset.r,b.dataset.i)})}
+ const hb=$('#hb');if(hb)hb.innerHTML=['low','high'].map(r=>['off','on'].map(i=>`<div><h2>${LBN[r]}・${LBN[i]}</h2>${boardHTML(r+'_'+i,10)}</div>`).join('')).join('')}
 /* ---- 電腦版開場：牌子選模式、開關選道具、按門進入 ---- */
 let pick='';
 /* 牌子下半部的說明文字：每一行各自傾斜，貼合牌子的透視（座標以 1920×1080 為準：左端、右端各自從上到下的範圍） */
@@ -250,7 +263,7 @@ function intro(){pick='';app.innerHTML='';let L=$('#ilayer');if(!L){L=document.c
  signText();drawBoard();const iw=$('.iw');
  const sel=m=>{pick=m;['low','high'].forEach(k=>{$('#l'+k).classList.toggle('on',k===m);$('#s'+k).classList.toggle('dim',k!==m);$('#t'+k).classList.toggle('dim',k!==m)});iw.classList.add('ready');drawBoard(m);$('#ih').className='ihint fo';$('#ih').textContent=(m==='low'?'低波動':'高波動（哪有賭狗天天輸）')+'・道具'+(IT?'開':'關')+(SPD>1?'・加速':'')+'　→　按門進入'};
  $('#hlow').onclick=()=>sel('low');$('#hhigh').onclick=()=>sel('high');
- $('#itog').onclick=()=>{IT=!IT;ls.set('bk_item',IT);const t=$('#itog');$('#pon').classList.toggle('on',IT);t.setAttribute('aria-pressed',IT);t.setAttribute('aria-label','道具：'+(IT?'開':'關'));if(pick)sel(pick)};
+ $('#itog').onclick=()=>{IT=!IT;ls.set('bk_item',IT);drawBoard(0,IT?'on':'off');const t=$('#itog');$('#pon').classList.toggle('on',IT);t.setAttribute('aria-pressed',IT);t.setAttribute('aria-label','道具：'+(IT?'開':'關'));if(pick)sel(pick)};
  $('#stog').onclick=()=>{SPD=SPD>1?1:2;ls.set('bk_spd',SPD);const t=$('#stog');$('#son').classList.toggle('on',SPD>1);t.setAttribute('aria-pressed',SPD>1);t.setAttribute('aria-label','加速：'+(SPD>1?'開':'關'));if(pick)sel(pick)};
  $('#rn').onclick=askName;$('#ex').onclick=csv;
  $('#hdoor').onclick=()=>{if(iw.classList.contains('go')||iw.classList.contains('quick'))return;if(sessOver()){$('#ih').className='ihint fo warn';$('#ih').textContent='這位玩家的 '+(C.G/60)+' 分鐘試玩時間已到，請按右上角「換玩家」';return}if(!pick){iw.classList.remove('shake');void iw.offsetWidth;iw.classList.add('shake');$('#ih').className='ihint fo warn';$('#ih').textContent='先選一個牌子（低波動或高波動）';return}
@@ -273,7 +286,7 @@ function lvl(n,sc,ent){if(quitted)return;hitAt=s&&s.hp===1&&C.lv[s.n-1].hp>1?Dat
 const cls=f=>{const ps=f.aim==='self'||/^self/.test(f.a||''),pf=!ps&&(f.aim||f.a);return`${f.aim?'aim-'+f.aim:''} ${f.a?'a-'+f.a:''} ${f.r?'r-'+f.r:''} ${ps?'ps':pf?'pf':''} ${f.k?'kill':''} ${f.ent?'a-ent':''}`};
 let hitAt=-1e9;
 const im=(n,c)=>`<img class="dh ${c||''}" src="assets/${n}.png" alt="">`;
-['intro_bg','intro_door','intro_low','intro_high','intro_low_light','intro_high_light','intro_props_button','intro_props_button_light','intro_speedup_button','intro_speedup_button_light','back_hair','body','cape','face_1','face_2','face_3','blush1','blush2','eyebrows1','eyes1','eyes2','eyes3','eyeballs1','eyeballs2','eyeballs_for_eyes2','mouth1','mouth2','mouth3','mouth4','mouth5','mouth6','mouth8','table','gun_take','gun_aim','gun_self','demon_take','demon_shot','demon_hand1','demon_hand2','bg_pc','bg_phone','heart'].forEach(n=>{new Image().src='assets/'+n+'.png'});
+['intro_bg','intro_door','intro_low','intro_high','intro_low_light','intro_high_light','intro_props_button','intro_props_button_light','intro_speedup_button','intro_speedup_button_light','back_hair','body','cape','face_1','face_2','face_3','blush1','blush2','eyebrows1','eyes1','eyes2','eyes3','eyeballs1','eyeballs2','eyeballs_for_eyes2','mouth1','mouth2','mouth3','mouth4','mouth5','mouth6','mouth8','table','table_pc','cat1','cat2','cat2_2','cat3','gun_take','gun_aim','gun_self','demon_take','demon_shot','demon_hand1','demon_hand2','bg_pc','bg_phone','heart'].forEach(n=>{new Image().src='assets/'+n+'.png'});
 const BL=m=>m===8?0:m===3?2:1;/* 嘴巴編號 → 腮紅編號 */
 function face(f){if(f.pf){const g=Object.assign({},f);delete g.pf;return`<div class="ph fpre">${f.pf}</div><div class="ph fpost">${face(g)}</div>`}
  const n=s.n,F=C.faces,[l,b]=left(s),act=F.act[n-1],ph=(c,h)=>h?`<div class="ph ${c}">${h}</div>`:'',
@@ -284,7 +297,7 @@ function face(f){if(f.pf){const g=Object.assign({},f);delete g.pf;return`<div cl
  const idle=!f.aim&&!f.a,nv=n===3&&s.hc===1&&b===0&&l>0&&f.a!=='selfl',
  e=f.a==='selfl'?Object.assign({},act,F.hit):nv?Object.assign({},F.idle[n-1],F.nerv):f.aim==='dev'?F.aimed:F.idle[n-1],bl=idle&&e.ball;
  return im('face_'+n)+(BL(e.mouth)?im('blush'+BL(e.mouth)):'')+eyes(e,bl)+im('eyebrows1')+im('mouth'+e.mouth)}
-const scene=(f,pl)=>`<div class=scene><div class=dvs aria-hidden="true"><div class=dv><img class=dh src="assets/back_hair.png" alt=""><img src="assets/body.png" alt=""><img src="assets/cape.png" alt="">${face(f)}</div></div><div class=dk></div><div class=tb><img src="assets/table.png" alt="">${pl}</div><div class=dhs aria-hidden="true"><img class="hh h1" src="assets/demon_take.png" alt=""><img class="hh h2" src="assets/demon_shot.png" alt=""><img class="pa pal" src="assets/demon_hand2.png" alt=""><img class="pa par" src="assets/demon_hand2.png" alt=""><img class="hnd hl" src="assets/demon_hand1.png" alt=""><img class="hnd hr" src="assets/demon_hand1.png" alt=""></div><div class=gw><div class=w1><img src="assets/gun_take.png" alt=""></div><div class=w2><img src="assets/gun_aim.png" alt=""></div><div class=w3><img src="assets/gun_self.png" alt=""></div></div></div>`;
+const scene=(f,pl)=>`<div class=scene>${catHTML()}<div class=dvs aria-hidden="true"><div class=dv><img class=dh src="assets/back_hair.png" alt=""><img src="assets/body.png" alt=""><img src="assets/cape.png" alt="">${face(f)}</div></div><div class=dk></div><div class=tb><img class=tpc src="assets/table_pc.png" alt=""><img class=tph src="assets/table.png" alt="">${pl}</div><div class=dhs aria-hidden="true"><img class="hh h1" src="assets/demon_take.png" alt=""><img class="hh h2" src="assets/demon_shot.png" alt=""><img class="pa pal" src="assets/demon_hand2.png" alt=""><img class="pa par" src="assets/demon_hand2.png" alt=""><img class="hnd hl" src="assets/demon_hand1.png" alt=""><img class="hnd hr" src="assets/demon_hand1.png" alt=""></div><div class=gw><div class=w1><img src="assets/gun_take.png" alt=""></div><div class=w2><img src="assets/gun_aim.png" alt=""></div><div class=w3><img src="assets/gun_self.png" alt=""></div></div></div>`;
 const hearts=(n,m)=>Array.from({length:m},(_,i)=>`<img src="assets/heart.png" alt=""${i<n?'':' class=lost'}>`).join('');
 /* 開槍姿勢 → 舉槍姿勢：先往舉槍的位置移一點，再兩張交叉淡入淡出（24fps 一格一格） */
 function gunPrev(){const st=$('.stage');if(!st||st.classList.contains('kill'))return null;
@@ -321,7 +334,14 @@ SN.forEach(n=>{try{const a=new Audio('assets/'+n+'.mp3');a.preload='auto';AEL[n]
 function unlock(){try{if(!AC){AC=new(window.AudioContext||window.webkitAudioContext)();SN.forEach(n=>fetch('assets/'+n+'.mp3').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()}).then(b=>new Promise((ok,no)=>AC.decodeAudioData(b,ok,no))).then(d=>{SFX[n]=d}).catch(()=>{}))}
  if(AC.state!=='running')AC.resume();const b=AC.createBufferSource();b.buffer=AC.createBuffer(1,1,22050);b.connect(AC.destination);b.start()}catch(e){}}
 /* 先用 Web Audio（延遲低）；還沒載好或不支援時改用 <audio> */
-function sfx(n){try{if(AC&&SFX[n]&&AC.state==='running'){const b=AC.createBufferSource();b.buffer=SFX[n];b.playbackRate.value=SPD;const g=AC.createGain();g.gain.value=VOL;b.connect(g);g.connect(AC.destination);b.start();return}
+/* ---- 貓：平時固定不動（1 睡覺或 3 坐著）；有人打出實彈就立刻換成 2（嚇到，每 0.5 秒和 2-2 交替），過一下再隨機淡入淡出成 1 或 3 ---- */
+let CAT={s:Math.random()<.5?1:3,until:0};
+const catSet=fd=>{const c=$('.cat');if(!c)return;c.classList.toggle('fd',!!fd);if(c.dataset.s!=String(CAT.s))c.dataset.s=CAT.s};
+function catStartle(){CAT={s:2,until:Date.now()+2200/SPD,t0:Date.now()};const c=$('.cat');if(c)c.style.setProperty('--cd','0ms');catSet(0)}
+setInterval(()=>{if(CAT.s!==2||Date.now()<CAT.until)return;CAT={s:Math.random()<.5?1:3,until:0,p:2,ft:Date.now()};catSet(1)},200);
+/* 畫面重畫時如果正在淡入淡出，新畫面接著同一個進度播完，不會跳掉 */
+function catHTML(){const e=Date.now()-(CAT.ft||0),fd=e<600/SPD;return`<div class=cat data-s=${CAT.s} style="--cd:${-(Date.now()-(CAT.t0||0))*SPD}ms" aria-hidden="true">${[1,2,'2_2',3].map(k=>`<img class="c${k}${fd&&String(k)[0]==String(CAT.p)?' cfo':''}${fd&&k===CAT.s?' cfi':''}" style="animation-delay:${-e*SPD}ms" src="assets/cat${k}.png" alt="">`).join('')}</div>`}
+function sfx(n){if(/^(shut_player|shut_demon)$/.test(n))catStartle();try{if(AC&&SFX[n]&&AC.state==='running'){const b=AC.createBufferSource();b.buffer=SFX[n];b.playbackRate.value=SPD;const g=AC.createGain();g.gain.value=VOL;b.connect(g);g.connect(AC.destination);b.start();return}
  const a=AEL[n];if(a){const c=a.cloneNode();c.volume=VOL;c.playbackRate=SPD;c.preservesPitch=false;c.play().catch(()=>{})}}catch(e){}}
 ['pointerdown','touchend','click','keydown'].forEach(t=>document.addEventListener(t,unlock,true));
 /* 左下角音量 */
