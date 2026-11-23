@@ -182,8 +182,8 @@ function shoot(s,act){const ev=[],take=()=>s.sh[s.i++];const x=take();
 const state=s=>s.hp<=0?'dead':s.hc<=0?'clear':'';
 const fin=s=>{const r=state(s);if(r==='clear')s.score+=C.bonus;return r};
 /* ---- 紀錄：每發即時存本機並分批送出 ---- */
-let seq=0,gid='',busy=0,busy2=0;const all=ls.get('bk_all')||[];let out=ls.get('bk_out')||[],out2=ls.get('bk_out2')||[];
-function log(type,o){const r=Object.assign({ts:twTime(),gid,pid,name,risk,params,item_mode:itemMode,seq:++seq,ver:C.ver,src:'human',type,device:/Mobi|Android|iPhone/.test(navigator.userAgent)?'phone':'pc'},o);all.push(r);out.push(r);ls.set('bk_all',all);ls.set('bk_out',out);if(C.url2){out2.push(r);ls.set('bk_out2',out2)}}
+let seq=0,gid='',gst='',busy=0,busy2=0;const all=ls.get('bk_all')||[];let out=ls.get('bk_out')||[],out2=ls.get('bk_out2')||[];
+function log(type,o){const r=Object.assign({ts:twTime(),gst,gid,pid,name,risk,params,item_mode:itemMode,seq:++seq,ver:C.ver,src:'human',type,device:/Mobi|Android|iPhone/.test(navigator.userAgent)?'phone':'pc'},o);all.push(r);out.push(r);ls.set('bk_all',all);ls.set('bk_out',out);if(C.url2){out2.push(r);ls.set('bk_out2',out2)}}
 /* 主要與備份各有自己的待送佇列：一邊連不上不會擋到另一邊 */
 function send(u,get,done,beacon,isBusy,setBusy){const q=get();if(!u||!q.length)return;const b=JSON.stringify(q),n=q.length;
  if(beacon&&navigator.sendBeacon){if(navigator.sendBeacon(u,new Blob([b],{type:'text/plain'})))done(n);return}
@@ -281,7 +281,7 @@ function showHome(){closeIntro();const d=m=>{const p=CFG[m];return`我的生命 
  $('#golow').onclick=()=>start('low');$('#gohigh').onclick=()=>start('high');$('#ex').onclick=csv;$('#rn').onclick=askName;$('#itm').onchange=e=>{IT=e.target.checked;ls.set('bk_item',IT);showHome()}}
 async function start(m,ent){if(sessOver())return home();if(!sess||sess.pid!==pid){sess={pid,t0:Date.now()};ls.set('bk_sess',sess)}inGame=1;if($('#golow')){$('#golow').disabled=$('#gohigh').disabled=true;$('#hs').textContent='載入設定中…'}
  await Promise.race([cfgP,new Promise(r=>setTimeout(r,3000))]);apply(m);
- gno++;ls.set('bk_n',gno);gid=pid+'-'+gno;seq=0;itemMode=IT?'on:'+C.items:'off';gt=Date.now();cleared=0;s=null;quitted=0;log('game_start',{});lvl(1,0,ent)}
+ gno++;ls.set('bk_n',gno);gid=pid+'-'+gno;gst=twTime();seq=0;itemMode=IT?'on:'+C.items:'off';gt=Date.now();cleared=0;s=null;quitted=0;log('game_start',{});lvl(1,0,ent)}
 function lvl(n,sc,ent){if(quitted)return;hitAt=s&&s.hp===1&&C.lv[s.n-1].hp>1?Date.now()-2400:-1e9;s=newLevel(n,sc);s.it=IT?C.items:0;s.pk=-1;shot=0;if(n>1)resend(gid);const b=left(s);log('level_start',{level:n,live_left:b[0],blank_left:b[1],hp:s.hp,hc:s.hc,score_after:sc});if(ent){draw('',1,{ent:1});const st=$('.stage');W(()=>{if($('.stage')===st)draw('')},3100)}else draw('')}
 const cls=f=>{const ps=f.aim==='self'||/^self/.test(f.a||''),pf=!ps&&(f.aim||f.a);return`${f.aim?'aim-'+f.aim:''} ${f.a?'a-'+f.a:''} ${f.r?'r-'+f.r:''} ${ps?'ps':pf?'pf':''} ${f.k?'kill':''} ${f.ent?'a-ent':''}`};
 let hitAt=-1e9;
