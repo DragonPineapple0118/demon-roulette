@@ -16,7 +16,7 @@ table{border-collapse:collapse;width:100%;font-size:14px}td,th{border-bottom:1px
 .world{position:relative;overflow:hidden;width:min(100vw,177.78vh);width:min(100vw,177.78dvh);aspect-ratio:16/9;
  --bg:url(assets/bg_pc.png);--dw:41.67%;--dt:-.8%;--oy:32.5%;--tw:57.3%;--tt:21.3%;--g1h:78%;--g1x:-2%;--g1b:-5%;--g2h:80%;--g2x:16.3%;--g2b:-.3%;--g3h:60%;--gy:-41%;--mw:19%;--mb:34%;--is:3.1cqw}
 @media(max-aspect-ratio:1/1){.world{width:min(100vw,47.37vh);width:min(100vw,47.37dvh);aspect-ratio:9/19;
- --bg:url(assets/bg_phone.png);--dw:120.4%;--dt:16.27%;--oy:25%;--tw:112%;--tt:39.43%;--g1h:56%;--g1x:15%;--g1b:-8.4%;--g2h:60%;--g2x:39%;--g2b:0%;--g3h:42%;--gy:-38%;--mw:46%;--mb:9%;--is:3.7cqw}}
+ --bg:url(assets/bg_phone.png);--dw:120.4%;--dt:14.5%;--oy:25%;--tw:112%;--tt:39.43%;--g1h:56%;--g1x:30%;--g1b:-8.4%;--g2h:60%;--g2x:39%;--g2b:0%;--g3h:42%;--gy:-38%;--mw:46%;--mb:9%;--is:3.7cqw}}
 .scene{position:absolute;inset:0;perspective:700px;background:#8c8c8c var(--bg) center/100% 100% no-repeat}
 .dvs{position:absolute;left:50%;top:var(--dt);width:var(--dw);aspect-ratio:1;translate:-50% 0}.dvs img,.dvs svg{position:absolute;inset:0;width:100%;height:100%}.dv{position:absolute;inset:0;-webkit-mask-image:linear-gradient(#000 84%,transparent 96%);mask-image:linear-gradient(#000 84%,transparent 96%)}
 .dh{transform-origin:49% 51%;animation:nod 5s ease-in-out infinite}@keyframes nod{0%,100%{rotate:-1.2deg}50%{rotate:1.2deg}}
@@ -26,10 +26,16 @@ table{border-collapse:collapse;width:100%;font-size:14px}td,th{border-bottom:1px
 .cat.fd img{transition:opacity .6s}.cat img.cfo{animation:cfo .6s linear both}.cat img.cfi{animation:cfi .6s linear both}@keyframes cfo{from{opacity:1}to{opacity:0}}@keyframes cfi{from{opacity:0}to{opacity:1}}.cat[data-s="2"] .c2_2{animation:c22 1s steps(1) var(--cd,0ms) infinite}@keyframes c22{0%{opacity:0}50%{opacity:1}}/* 貓 2 嚇到時：每 0.5 秒在 2 和 2-2 之間切換 */
 .cat[data-s="1"] .c1,.cat[data-s="2"] .c2,.cat[data-s="3"] .c3{opacity:1}
 /* 電腦版：新桌子是整張 16:9 跟背景疊在一起；桌上的字和愛心位置都是相對整個畫面 */
-@media(min-aspect-ratio:1/1){.cat{display:block}.tb{left:0;top:0;width:100%;aspect-ratio:16/9;translate:none}.tb .tpc{display:block}.tb .tph{display:none}
+/* 電腦版與手機版都用同一張 16:9 新桌子；桌上的字和愛心位置是相對桌子這張圖 */
+.tb .tpc{display:block}.tb .tph{display:none}
  .tb .n{top:71.8%;font-size:3.5cqw;transform:skewX(27deg)}.tb #vb{left:69.8%}.tb #vl{left:78.3%;transform:skewX(31deg)}
  .tb .inf{left:27.3%;top:68.9%;width:20%;font-size:2.35cqw}
- .tb .hpd{left:50%;top:57.6%;height:2.3cqw}.tb .hpm{left:11.5%;top:87%;height:3.4cqw}}
+ .tb .hpd{left:50%;top:57.6%;height:2.3cqw}.tb .hpm{left:11.5%;top:87%;height:3.4cqw}
+body #msg{bottom:auto;top:7%}
+@media(min-aspect-ratio:1/1){.cat{display:block}.tb{left:0;top:0;width:100%;aspect-ratio:16/9;translate:none}}
+/* 手機直式：桌子放大、左右超出畫面一點（照手機版示意圖的位置），字和愛心放大 */
+@media(max-aspect-ratio:1/1){.tb{left:-13.54%;top:39.31%;width:126.46%;aspect-ratio:16/9;translate:none}
+ .tb .inf{font-size:3.3cqw}.tb .n{font-size:4.2cqw}.tb .hpd{height:3.2cqw}.tb .hpm{left:17%;top:86%;height:5cqw}}
 .n{position:absolute;top:52.9%;translate:-50% -50%;transform:skewX(14deg);font-weight:800;font-size:5.6cqw;line-height:1;font-variant-numeric:tabular-nums}
 #vb{left:71.2%}#vl{left:80.6%;color:#c0392b}.hp{position:absolute;display:flex;gap:1.2cqw;translate:-50% -50%}.tb .hp img{position:static;width:auto;height:100%}.hp .lost{opacity:.2;filter:grayscale(1)}.hpd{left:50%;top:41.6%;height:3.6cqw}.hpm{left:12.5%;top:64%;height:6.2cqw;translate:0 -50%}
 .inf{position:absolute;left:25.5%;top:51%;width:24%;translate:-50% -50%;display:flex;flex-direction:column;align-items:center;font-size:3.5cqw;font-weight:800;line-height:1.45;white-space:nowrap;text-align:center}.inf i{font-style:normal;color:#c0392b}
@@ -69,6 +75,7 @@ table{border-collapse:collapse;width:100%;font-size:14px}td,th{border-bottom:1px
 .itm{position:absolute;left:50%;translate:-50% 0;bottom:calc(3% + 58px);z-index:6;margin:0;width:auto;padding:8px 16px;font-size:15px;white-space:nowrap}
 .pk{border-radius:999px;background:#000c;color:#eee;border:2px solid #888}.pk.lv{border-color:#c0392b;color:#ffb3a8}.pk.lv b{color:#ff5a46}.pk.bk b{color:#fff}
 @media(max-aspect-ratio:1/1){.itm{bottom:70px}}
+@media(max-aspect-ratio:1/1){body .vol{bottom:128px}}/* 手機直式：音量移到按鈕上面，避免擋住「射自己」 */
 .tg{display:flex;gap:10px;align-items:center;margin:14px 0;padding:10px 14px;border:2px dashed var(--line);border-radius:12px;cursor:pointer}.tg input{width:22px;height:22px;margin:0}
 .intro{position:fixed;inset:0;z-index:20;background:transparent;display:grid;place-items:center;overflow:hidden}
 .iw{position:relative;width:min(100vw,177.78vh);aspect-ratio:16/9;overflow:hidden;container-type:inline-size;color:#eee}
@@ -364,7 +371,7 @@ function peek(){if(!s.it||s.pk===s.i||s.i>=s.sh.length)return;s.it--;s.pk=s.i;co
 function act(a,to){if(quitted)return;clearInterval(tm);sfx('loaded');const dt=Math.min(C.T,(Date.now()-t0)/1000);draw('瞄準中…',1,{aim:a==='s'?'self':'dev'});W(()=>fire(a,to,dt),1500)}
 function fire(a,to,dt){if(quitted)return;const pk=s.pk===s.i?(s.sh[s.i]?'live':'blank'):'',pre=a==='c'?face({aim:'dev'}):'',b=left(s),sb=s.score,hp=s.hp,hc=s.hc,ev=shoot(s,a),m=[];
  if(to)m.push('超時，自動射惡魔。');
- ev.forEach((e,j)=>{log('shot',{level:s.n,shot_no:++shot,live_left:b[0],blank_left:j?b[1]-1:b[1],hp,hc,score_before:j?ev[0].sc:sb,actor:e.actor,action:j?'retaliate':to?'timeout_computer':a==='s'?'self':'computer',result:e.x?'live':'blank',score_after:e.sc,dec_time:j?'':dt.toFixed(2),timeout:to?1:0,peeked:j?'':pk,item_left:j?'':s.it});
+ ev.forEach((e,j)=>{log('shot',{level:s.n,shot_no:++shot,live_left:b[0],blank_left:j?b[1]-1:b[1],hp,hc,score_before:j?ev[0].sc:sb,actor:e.actor,action:j?'retaliate':to?'timeout_computer':a==='s'?'self':'computer',result:e.x?'live':'blank',score_after:e.sc,dec_time:j?'':dt.toFixed(2),timeout:j?'':to?1:0,peeked:j?'':pk,item_left:j?'':s.it});
   m.push(j?`惡魔反擊：${e.x?'實彈，你的生命 −1':'空彈'}。`:e.tgt==='self'?`對自己開槍：${e.x?'實彈，生命 −1':'空彈，+'+C.a+' 分'}。`:`對惡魔開槍：${e.x?'實彈，+'+C.b+' 分，惡魔生命 −1':'空彈，−'+C.d+' 分'}。`)});
  const r=fin(s),e0=ev[0],e1=ev[1],fx={a:e0.tgt==='self'?(e0.x?'selfl':'selfb'):(e0.x?'hitd':'clkd'),r:e1?(e1.x?'live':'blank'):'',h0:hp,k:r==='clear'},full=m.join('<br>');if(fx.a==='hitd')fx.pf=pre;
  /* 結果在開槍那一刻才揭曉：反擊前只顯示玩家這一發之後的狀態 */
@@ -406,7 +413,7 @@ function simGame(o,P,gno,t0){/* 回傳這一局的事件列（跟真實紀錄同
     pk=seen;a=seen==='live'?'c':'s';d=dp+thinkT(seen==='live'?1:0)*.6;t+=(d-dp)*1000}else t+=Math.min(d,C.T)*1000;
    if(d>=C.T){d=C.T;to=1;a='c'}
    const sb=x.score,hp=x.hp,hc=x.hc,ev=shoot(x,a);
-   ev.forEach((e,j)=>{L('shot',{level:n,shot_no:++shotN,live_left:b[0],blank_left:j?b[1]-1:b[1],hp,hc,score_before:j?ev[0].sc:sb,actor:e.actor,action:j?'retaliate':to?'timeout_computer':a==='s'?'self':'computer',result:e.x?'live':'blank',score_after:e.sc,dec_time:j?'':d.toFixed(2),timeout:to,peeked:j?'':pk,item_left:j?'':it})});
+   ev.forEach((e,j)=>{L('shot',{level:n,shot_no:++shotN,live_left:b[0],blank_left:j?b[1]-1:b[1],hp,hc,score_before:j?ev[0].sc:sb,actor:e.actor,action:j?'retaliate':to?'timeout_computer':a==='s'?'self':'computer',result:e.x?'live':'blank',score_after:e.sc,dec_time:j?'':d.toFixed(2),timeout:j?'':to,peeked:j?'':pk,item_left:j?'':it})});
    t+=SIMT.AIM*1000;r=fin(x);const e0=ev[0],e1=ev[1];
    const k=e0.tgt==='self'?(e0.x?(r==='dead'?'SD':'SL'):'SB'):(e0.x?(r==='clear'?'KILL':'HIT'):(e1&&e1.x?(r==='dead'?'RD':'RL'):'RB'));t+=SIMT[k]*1000}
   if(!r)r='out';sc=x.score;L('level_end',{level:n,end_reason:r,score_after:x.score,hp:x.hp,hc:x.hc});
